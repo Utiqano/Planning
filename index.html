@@ -3,371 +3,534 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning Calendrier</title>
-    <!-- FIREBASE SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+    <title>TV-DASH Analytique 2025</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f5f5f5; }
-
-        /* LOGIN PAGE */
-        .login-page { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(135deg, #2c3e50, #3498db); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .login-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 300px; }
-        .login-title { color: #2c3e50; margin-bottom: 20px; font-size: 24px; }
-        .login-group { margin-bottom: 15px; text-align: left; }
-        .login-group label { display: block; margin-bottom: 5px; color: #555; font-weight: bold; }
-        .login-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        .login-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .login-btn:hover { background: #229954; }
-        .login-error { color: #e74c3c; margin-top: 10px; font-size: 14px; }
-        .loading { background: #95a5a6; cursor: not-allowed; }
-
-        /* APP HIDDEN */
-        .app-hidden { display: none !important; }
-
-        /* NAVBAR + APP (RESTE IDENTIQUE) */
-        .navbar { background: #2c3e50; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; color: white; }
-        .nav-title { font-size: 1.2rem; font-weight: bold; }
-        .nav-buttons { display: flex; gap: 5px; }
-        .nav-btn { padding: 6px 10px; background: #3498db; border: none; color: white; border-radius: 3px; cursor: pointer; font-size: 12px; }
-        .nav-btn:hover { background: #2980b9; }
-        .sync-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
-        .online { background: #27ae60; color: white; }
-        .offline { background: #e74c3c; color: white; }
-        .form-toggle { position: fixed; top: 70px; right: 10px; z-index: 1000; width: 40px; height: 40px; background: #27ae60; color: white; border: none; border-radius: 50%; font-size: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .form-toggle:hover { background: #229954; transform: scale(1.05); }
-        .form-toggle.close { background: #e74c3c; }
-        .delete-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
-        .delete-modal.show { display: flex; align-items: center; justify-content: center; }
-        .delete-content { background: white; padding: 20px; border-radius: 8px; text-align: center; max-width: 300px; box-shadow: 0 3px 15px rgba(0,0,0,0.3); }
-        .delete-btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; }
-        .delete-yes { background: #e74c3c; color: white; }
-        .delete-no { background: #95a5a6; color: white; }
-        .legend { background: white; padding: 8px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; min-width: 80px; }
-        .legend-color { width: 12px; height: 12px; border-radius: 2px; border: 1px solid #333; }
-        .planifie-color { background: #f1c40f; }
-        .realise-color { background: #27ae60; }
-        .retard-color { background: #e74c3c; }
-        .raporte-color { background: #e67e22; }
-        .main-container { display: flex; height: calc(100vh - 55px); margin-top: 55px; }
-        .form-section { width: 28%; background: white; padding: 15px; overflow-y: auto; border-right: 1px solid #ddd; transform: translateX(-100%); transition: transform 0.3s ease; position: fixed; height: calc(100vh - 110px); z-index: 999; top: 55px; }
-        .form-section.open { transform: translateX(0); }
-        .form-section.edit-mode { background: #fff3cd; border-left: 4px solid #f39c12; }
-        .form-close { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-size: 14px; }
-        .form-title { text-align: center; margin-bottom: 15px; color: #2c3e50; font-size: 16px; }
-        .form-title.edit { color: #f39c12; }
-        .form-mode { background: #f39c12; color: white; padding: 3px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 3px; font-weight: bold; color: #555; font-size: 12px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; }
-        .form-group textarea { height: 60px; resize: vertical; }
-        .comment-section { display: none; margin-top: 8px; background: #fff3cd; padding: 8px; border-radius: 3px; border: 1px solid #ffeaa7; }
-        .comment-section.show { display: block; }
-        .submit-btn, .delete-task-btn { width: 48%; padding: 10px; border: none; border-radius: 3px; font-size: 14px; cursor: pointer; margin-top: 8px; }
-        .submit-btn { background: #27ae60; color: white; }
-        .submit-btn:hover { background: #229954; }
-        .delete-task-btn { background: #e74c3c; color: white; }
-        .delete-task-btn:hover { background: #c0392b; }
-        .calendar-section { width: 100%; padding: 15px; overflow-y: auto; }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .month-nav { display: flex; gap: 3px; flex-wrap: wrap; }
-        .month-btn { padding: 6px 8px; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; }
-        .month-btn:hover { background: #2980b9; }
-        .week-btn { background: #f39c12 !important; }
-        .week-btn:hover { background: #e67e22 !important; }
-        .current-month { font-size: 1.2rem; font-weight: bold; color: #2c3e50; }
-        .calendar-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
-        .calendar-table th, .calendar-table td { border: 1px solid #ddd; padding: 4px; text-align: center; font-size: 11px; }
-        .calendar-table th { background: #34495e; color: white; padding: 6px; }
-        .calendar-table td { height: 110px; vertical-align: top; position: relative; cursor: pointer; transition: background 0.2s; }
-        .calendar-table td:hover { background: #f8f9fa; }
-        .day-number { position: absolute; top: 2px; right: 2px; font-weight: bold; font-size: 12px; color: #2c3e50; }
-        .day-details { margin-top: 20px; font-size: 9px; }
-        .task-item { margin-bottom: 1px; padding: 1px 3px; border-radius: 2px; color: white; font-size: 8px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; position: relative; cursor: pointer; }
-        .task-item:hover { transform: scale(1.03); }
-        .planifie { background: #f1c40f !important; color: #000 !important; }
-        .realise { background: #27ae60 !important; }
-        .retard { background: #e74c3c !important; }
-        .raporte { background: #e67e22 !important; }
-        .other-month { color: #bdc3c7; background: #ecf0f1; }
-        .task-count { position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,0.7); color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; }
-        .delete-icon { position: absolute; right: 1px; top: 0; font-size: 7px; cursor: pointer; opacity: 0.7; }
-        .delete-icon:hover { opacity: 1; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .login-card h2 { text-align: center; margin-bottom: 30px; color: #333; }
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #667eea; }
+        .input-group input { width: 100%; padding: 15px 15px 15px 45px; border: 2px solid #e1e5e9; border-radius: 10px; font-size: 16px; }
+        .input-group input:focus { outline: none; border-color: #667eea; }
+        .login-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+        .login-btn:hover { transform: translateY(-2px); }
+        .error { color: #e74c3c; text-align: center; margin-top: 10px; }
+        .dashboard-container { min-height: 100vh; background: #f8f9fa; display: none; }
+        .navbar { background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .nav-left h3 { margin: 0; }
+        .nav-buttons { display: flex; gap: 10px; align-items: center; }
+        .nav-btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .nav-btn:hover { transform: translateY(-2px); }
+        .nav-btn.active { background: #28a745; color: white; }
+        .nav-month { background: #007bff; color: white; }
+        .nav-week { background: #ffc107; color: #212529; }
+        .export-btn { background: #17a2b8; color: white; }
+        .logout-btn { background: #e74c3c; color: white; }
+        .add-form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 20px auto; max-width: 1400px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; }
+        .form-grid input, .form-grid select { padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px; }
+        .cout-field { background: #fff3cd; border-color: #ffeaa7; }
+        .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .add-btn:hover { transform: translateY(-2px); }
+        .legend-analytics { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); margin: 20px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .legend, .analytics { text-align: center; }
+        .legend-item, .analytic-item { display: inline-block; margin: 0 10px; padding: 8px 12px; border-radius: 5px; font-weight: bold; }
+        .legend-planifier { background: #f8f9fa; border-left: 4px solid #6c757d; color: #6c757d; }
+        .legend-realiser { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
+        .legend-raporter { background: #f8d7da; border-left: 4px solid #dc3545; color: #721c24; }
+        .analytic-item { background: #e9ecef; border-radius: 8px; margin: 5px 0; padding: 10px; }
+        .analytic-value { font-size: 20px; font-weight: bold; color: #28a745; }
+        .view-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .month-view, .week-view { display: none; }
+        .month-view.active, .week-view.active { display: block; }
+        .month-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .month-container { background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow: hidden; }
+        .month-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .month-header:hover { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); transform: scale(1.02); }
+        .month-title { font-size: 18px; font-weight: bold; }
+        .month-active { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
+        .month-hidden { display: none !important; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; }
+        .day-header { background: #f8f9fa; padding: 10px; text-align: center; font-weight: bold; color: #333; }
+        .day-cell { background: white; padding: 5px; min-height: 90px; position: relative; border: 1px solid #dee2e6; }
+        .day-number { font-weight: bold; margin-bottom: 3px; text-align: center; }
+        .week-number { position: absolute; top: 2px; right: 3px; background: #e9ecef; padding: 2px 5px; border-radius: 10px; font-size: 9px; color: #495057; }
+        .week-container { background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 20px; }
+        .week-header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); padding: 20px; text-align: center; color: #212529; }
+        .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .week-select-group { display: flex; gap: 10px; align-items: center; }
+        .week-select { padding: 8px 12px; border: 2px solid #007bff; border-radius: 5px; font-weight: bold; }
+        .week-nav-btn { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        .week-title { font-size: 24px; font-weight: bold; }
+        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; }
+        .week-day-header { background: #f8f9fa; padding: 15px; text-align: center; font-weight: bold; color: #333; }
+        .week-day-cell { background: white; padding: 15px; min-height: 180px; border: 1px solid #dee2e6; }
+        .week-date { font-weight: bold; font-size: 16px; margin-bottom: 10px; text-align: center; color: #495057; }
+        .week-plannings { display: flex; flex-direction: column; gap: 8px; }
+        .planning-item { padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; border-left: 5px solid; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .planning-item.planifier { background: #f8f9fa; color: #6c757d; border-left-color: #6c757d; }
+        .planning-item.realiser { background: #d4edda; color: #155724; border-left-color: #28a745; }
+        .planning-item.raporter { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
+        .planning-left { display: flex; flex-direction: column; }
+        .planning-line { font-weight: bold; font-size: 14px; }
+        .planning-details { font-size: 11px; opacity: 0.8; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 15px; }
+        .summary-table th, .summary-table td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
+        .summary-table th { background: #dee2e6; font-weight: bold; }
+        .month-summary { padding: 15px; background: #f8f9fa; margin: 10px; border-radius: 8px; }
+        @media (max-width: 1200px) { .month-row { grid-template-columns: repeat(2, 1fr); } .legend-analytics { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .week-nav { flex-direction: column; } }
     </style>
 </head>
 <body>
-    <!-- 🔥 LOGIN PAGE -->
-    <div class="login-page" id="loginPage">
-        <div class="login-box">
-            <h2 class="login-title">🔐 PLANNING</h2>
-            <div class="login-group">
-                <label>📧 Email</label>
-                <input type="email" id="loginEmail" placeholder="exemple@equipe.com" required>
-            </div>
-            <div class="login-group">
-                <label>🔑 Mot de passe</label>
-                <input type="password" id="loginPassword" placeholder="Mot de passe" required>
-            </div>
-            <button class="login-btn" onclick="signIn()">🚀 CONNEXION</button>
-            <div class="login-error" id="loginError"></div>
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <h2><i class="fas fa-user"></i> Connexion TV-DASH</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Mot de passe" required>
+                </div>
+                <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+            </form>
+            <p id="loginError" class="error"></p>
         </div>
     </div>
 
-    <!-- 🔥 APP (cachée au début) -->
-    <div id="app" class="app-hidden">
+    <div id="dashboard" class="dashboard-container">
         <nav class="navbar">
-            <div class="nav-title">📅 PLANNING <span style="font-size:10px;">👤 <span id="userEmail"></span></span></div>
+            <div class="nav-left"><h3><i class="fas fa-calendar-alt"></i> TV-DASH Analytique 2025</h3></div>
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="exportExcel()">📊</button>
-                <button class="nav-btn" onclick="printCalendar()">🖨️</button>
-                <button class="nav-btn" onclick="clearAll()">🗑️</button>
-                <span class="sync-status online" id="syncStatus">🔴</span>
-                <button class="nav-btn" onclick="signOut()">🚪</button>
+                <button id="monthViewBtn" class="nav-btn nav-month active"><i class="fas fa-calendar"></i> Mois</button>
+                <button id="weekViewBtn" class="nav-btn nav-week"><i class="fas fa-calendar-week"></i> Hebdo</button>
+                <button id="exportBtn" class="nav-btn export-btn"><i class="fas fa-file-excel"></i> Excel</button>
+                <button id="showAllBtn" style="background:#007bff; color:white;"><i class="fas fa-eye"></i> Tous</button>
+                <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
             </div>
         </nav>
-        <button class="form-toggle" id="formToggle" onclick="toggleForm()">➕</button>
-        <div class="delete-modal" id="deleteModal">
-            <div class="delete-content">
-                <h3>🗑️ Supprimer ?</h3>
-                <p id="deleteTaskInfo"></p>
-                <button class="delete-btn delete-yes" onclick="confirmDelete()">✅</button>
-                <button class="delete-btn delete-no" onclick="cancelDelete()">❌</button>
+
+        <div class="view-container">
+            <div class="add-form">
+                <h3><i class="fas fa-plus"></i> Ajouter Planning</h3>
+                <div class="form-grid">
+                    <select id="semaine">
+                        <option value="">S??</option>
+                        <option value="1">S01</option><option value="2">S02</option><option value="3">S03</option><option value="4">S04</option><option value="5">S05</option>
+                        <option value="6">S06</option><option value="7">S07</option><option value="8">S08</option><option value="9">S09</option><option value="10">S10</option><option value="11">S11</option><option value="12">S12</option><option value="13">S13</option>
+                        <option value="14">S14</option><option value="15">S15</option><option value="16">S16</option><option value="17">S17</option><option value="18">S18</option><option value="19">S19</option><option value="20">S20</option><option value="21">S21</option><option value="22">S22</option>
+                        <option value="23">S23</option><option value="24">S24</option><option value="25">S25</option><option value="26">S26</option><option value="27">S27</option><option value="28">S28</option><option value="29">S29</option><option value="30">S30</option><option value="31">S31</option><option value="32">S32</option><option value="33">S33</option>
+                        <option value="34">S34</option><option value="35">S35</option><option value="36">S36</option><option value="37">S37</option><option value="38">S38</option><option value="39">S39</option><option value="40">S40</option><option value="41">S41</option><option value="42">S42</option><option value="43">S43</option>
+                        <option value="44">S44</option><option value="45">S45</option><option value="46">S46</option><option value="47">S47</option><option value="48">S48</option><option value="49">S49</option><option value="50">S50</option><option value="51">S51</option><option value="52">S52</option>
+                    </select>
+                    <input type="number" id="heures" placeholder="Heures" min="0">
+                    <input type="number" id="effectif" placeholder="Effectif" min="0">
+                    <input type="number" id="cout" class="cout-field" placeholder="Coût €" min="0">
+                    <select id="ligne">
+                        <option value="">Ligne</option>
+                        <option value="F01">F01</option><option value="F02">F02</option><option value="F06">F06</option><option value="F15">F15</option>
+                        <option value="F27">F27</option><option value="F31">F31</option><option value="F73">F73</option><option value="F85">F85</option>
+                        <option value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
+                        <option value="L76">L76</option><option value="L77">L77</option><option value="L84">L84</option>
+                        <option value="L101">L101</option><option value="L108">L108</option>
+                        <option value="A12">A12</option>
+                        <option value="Boy2">Boy 2</option><option value="Boy3">Boy 3</option>
+                        <option value="420T">420 T</option><option value="450T">450 T</option><option value="400T">400 T</option>
+                        <option value="520T">520 T</option><option value="550T">550 T</option>
+                        <option value="125T">125 T</option><option value="120T">120 T</option>
+                        <option value="80T">80 T</option><option value="50T">50 T</option>
+                    </select>
+                    <select id="statut">
+                        <option value="">Statut</option>
+                        <option value="planifier">📋 Planifier</option>
+                        <option value="realiser">✅ Réaliser</option>
+                        <option value="raporter">🔴 Rapporter</option>
+                    </select>
+                    <button id="addBtn" class="add-btn"><i class="fas fa-save"></i> Ajouter</button>
+                </div>
             </div>
-        </div>
-        <div class="main-container">
-            <div class="form-section" id="formSection">
-                <button class="form-close" onclick="cancelEdit()">✕</button>
-                <h2 class="form-title" id="formTitle">➕ NOUVELLE</h2>
-                <span class="form-mode" id="formMode" style="display:none">✏️ ÉDITION</span>
-                <div class="form-group"><label>📅 Date</label><input type="date" id="taskDate" required></div>
-                <div class="form-group"><label>🏭 Ligne</label><select id="taskLine" required><option value="">Ligne...</option><option value="50 T">50 T</option><option value="80 T">80 T</option><option value="120 T">120 T</option><option value="125 T">125 T</option><option value="520 T">520 T</option><option value="400 T">400 T</option><option value="450 T">450 T</option><option value="550 T">550 T</option><option value="420 T">420 T</option><option value="A12">A12</option><option value="Boy 2">Boy 2</option><option value="Boy 3">Boy 3</option><option value="F06">F06</option><option value="L101">L101</option><option value="L108">L108</option><option value="F31">F31</option><option value="F87">F87</option><option value="F27">F27</option><option value="F15">F15</option><option value="F73">F73</option><option value="L84">L84</option><option value="F85">F85</option><option value="F86">F86</option><option value="F99">F99</option><option value="F83">F83</option><option value="F02">F02</option><option value="F01">F01</option><option value="L76">L76</option><option value="L77">L77</option></select></div>
-                <div class="form-group"><label>📝 Description</label><textarea id="taskDesc" placeholder="Détails..."></textarea></div>
-                <div class="form-group"><label>🚦 Statut</label><select id="taskStatus" onchange="toggleComment()" required><option value="">...</option><option value="planifie">⏳ Planifié</option><option value="realise">✅ Réalisé</option><option value="retard">⏰ Retard</option><option value="raporte">📅 Rapporter</option></select></div>
-                <div class="comment-section" id="commentSection"><label>📅 Nouvelle Date</label><input type="date" id="newDate"><small>Date report</small></div>
-                <div class="form-group"><label>👤 Responsable</label><input type="text" id="taskPerson" placeholder="Jean"></div>
-                <div style="display:flex; gap:4%;"><button class="submit-btn" id="submitBtn" onclick="submitTask()">✅</button><button class="delete-task-btn" id="deleteBtn" onclick="showDeleteModal()" style="display:none;">🗑️</button></div>
-            </div>
-            <div class="calendar-section">
+
+            <div class="legend-analytics">
                 <div class="legend">
-                    <div class="legend-item"><div class="legend-color planifie-color"></div>⏳ Planifié</div>
-                    <div class="legend-item"><div class="legend-color realise-color"></div>✅ Réalisé</div>
-                    <div class="legend-item"><div class="legend-color retard-color"></div>⏰ Retard</div>
-                    <div class="legend-item"><div class="legend-color raporte-color"></div>📅 Rapporter</div>
+                    <h4><i class="fas fa-palette"></i> Légende Couleurs</h4>
+                    <div class="legend-planifier legend-item">📋 Planifier</div>
+                    <div class="legend-realiser legend-item">✅ Réaliser</div>
+                    <div class="legend-raporter legend-item">🔴 Rapporter</div>
                 </div>
-                <div class="calendar-header">
-                    <div class="month-nav">
-                        <button class="month-btn" onclick="prevMonth()">◀</button>
-                        <button class="month-btn" onclick="today()">Aujourd'hui</button>
-                        <button class="month-btn week-btn" onclick="thisWeek()">🗓️ Semaine</button>
-                        <button class="month-btn" onclick="nextMonth()">▶</button>
-                    </div>
-                    <div class="current-month" id="currentMonth"></div>
+                <div class="analytics" id="analyticsPanel">
+                    <h4><i class="fas fa-chart-bar"></i> Analytique</h4>
+                    <div class="analytic-item"><div>Total Heures</div><div class="analytic-value" id="totalHeures">0</div></div>
+                    <div class="analytic-item"><div>Moyenne/Technicien</div><div class="analytic-value" id="moyenneTech">0 H</div></div>
+                    <div class="analytic-item"><div>Total Coût</div><div class="analytic-value" id="totalCout">0 €</div></div>
+                    <div class="analytic-item"><div>% Réalisation</div><div class="analytic-value" id="pourcentageReal">0%</div></div>
                 </div>
-                <table class="calendar-table" id="calendarTable">
-                    <thead><tr><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
-                    <tbody id="calendarBody"></tbody>
-                </table>
+            </div>
+
+            <div id="monthView" class="month-view active">
+                <div id="calendarContainer"></div>
+            </div>
+            <div id="weekView" class="week-view">
+                <div id="weekContainer"></div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        // 🔥 FIREBASE CONFIG
+        // FIREBASE LOCAL ANTI-CORS (CODEPEN)
         const firebaseConfig = {
             apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
             authDomain: "tvdash-9e6b3.firebaseapp.com",
             databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
-            projectId: "tvdash-9e6b3",
-            storageBucket: "tvdash-9e6b3.firebasestorage.app",
-            messagingSenderId: "307274554235",
-            appId: "1:307274554235:web:862dc484ee93254383fbde",
-            measurementId: "G-0DJ7V5HPWD"
+            projectId: "tvdash-9e6b3"
         };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-        const tasksRef = database.ref('tasks');
 
-        let currentDate = new Date();
-        let tasks = {};
-        let editingTaskId = null; 
-        let deletingTaskId = null; 
-        let viewMode = 'month';
-        let user = null;
+        // SIMULATION LOCAL (100% FONCTIONNEL SANS CORS)
+        let planningData = JSON.parse(localStorage.getItem('tvDashData')) || {};
+        let currentUser = { uid: 'demo' };
+        let currentFilter = 'all';
+        let currentWeek = 1;
+        let currentMonth = 0;
+        const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-        // 🔥 AUTHENTICATION
-        function signIn() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const btn = document.querySelector('.login-btn');
-            const error = document.getElementById('loginError');
-            
-            if (!email || !password) {
-                error.textContent = '⚠️ Email et mot de passe requis !';
+        // LOGIN DEMO
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            initCalendar();
+            loadPlanning();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        });
+
+        // NAVIGATION
+        document.getElementById('monthViewBtn').addEventListener('click', () => {
+            document.getElementById('monthView').classList.add('active');
+            document.getElementById('weekView').classList.remove('active');
+            document.getElementById('monthViewBtn').classList.add('active');
+            document.getElementById('weekViewBtn').classList.remove('active');
+            currentMonth = currentFilter;
+            initCalendar();
+            updateAnalytics('month');
+        });
+
+        document.getElementById('weekViewBtn').addEventListener('click', () => {
+            document.getElementById('weekView').classList.add('active');
+            document.getElementById('monthView').classList.remove('active');
+            document.getElementById('weekViewBtn').classList.add('active');
+            document.getElementById('monthViewBtn').classList.remove('active');
+            window.showWeek(currentWeek);
+            updateAnalytics('week');
+        });
+
+        document.getElementById('showAllBtn').addEventListener('click', () => {
+            currentFilter = 'all';
+            document.querySelectorAll('.month-header').forEach(h => {
+                h.classList.remove('month-active');
+                h.parentElement.classList.remove('month-hidden');
+            });
+            updateAnalytics('month');
+        });
+
+        // AJOUTER
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const semaine = parseInt(document.getElementById('semaine').value) || 0;
+            const heures = parseInt(document.getElementById('heures').value) || 0;
+            const effectif = parseInt(document.getElementById('effectif').value) || 0;
+            const cout = parseInt(document.getElementById('cout').value) || 0;
+            const ligne = document.getElementById('ligne').value;
+            const statut = document.getElementById('statut').value;
+
+            if (!semaine || !heures || !effectif || !ligne || !statut) {
+                alert('⚠️ TOUS les champs requis !');
                 return;
             }
+
+            const data = {
+                id: Date.now(),
+                semaine, heures, effectif, cout, ligne, statut,
+                userId: currentUser.uid,
+                createdAt: new Date().toISOString(),
+                month: getMonthFromWeek(semaine)
+            };
+
+            const key = `${data.month}_${data.semaine}`;
+            if (!planningData[key]) planningData[key] = [];
+            planningData[key].push(data);
+            localStorage.setItem('tvDashData', JSON.stringify(planningData));
+
+            document.getElementById('semaine').value = '';
+            document.getElementById('heures').value = '';
+            document.getElementById('effectif').value = '';
+            document.getElementById('cout').value = '';
+            document.getElementById('ligne').value = '';
+            document.getElementById('statut').value = '';
             
-            btn.textContent = '⏳ Connexion...';
-            btn.classList.add('loading');
+            alert('✅ AJOUTÉ dans ' + getMonthName(data.month) + ' !');
             
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    user = userCredential.user;
-                    showApp();
-                })
-                .catch((error) => {
-                    error.textContent = `❌ ${error.message}`;
-                    btn.textContent = '🚀 CONNEXION';
-                    btn.classList.remove('loading');
-                });
+            if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
+                window.showWeek(semaine);
+            }
+            updateAnalytics(document.getElementById('weekView').classList.contains('active') ? 'week' : 'month');
+            if (document.getElementById('monthView').classList.contains('active')) initCalendar();
+        });
+
+        // ANALYTIQUES
+        function updateAnalytics(viewType) {
+            let data = [];
+            if (viewType === 'week') {
+                data = getWeekPlannings(currentWeek);
+            } else {
+                data = getMonthSummary(currentMonth);
+            }
+
+            const totalHeures = data.reduce((sum, item) => sum + item.heures, 0);
+            const totalEffectif = data.reduce((sum, item) => sum + item.effectif, 0);
+            const totalCout = data.reduce((sum, item) => sum + (item.cout || 0), 0);
+            const realiserHeures = data.filter(item => item.statut === 'realiser').reduce((sum, item) => sum + item.heures, 0);
+            const moyenneTech = totalEffectif > 0 ? (totalHeures / totalEffectif).toFixed(1) : 0;
+            const pourcentageReal = totalHeures > 0 ? ((realiserHeures / totalHeures) * 100).toFixed(1) : 0;
+
+            document.getElementById('totalHeures').textContent = totalHeures;
+            document.getElementById('moyenneTech').textContent = moyenneTech + ' H';
+            document.getElementById('totalCout').textContent = totalCout.toLocaleString() + ' €';
+            document.getElementById('pourcentageReal').textContent = pourcentageReal + '%';
         }
 
-        function signOut() {
-            auth.signOut().then(() => {
-                hideApp();
+        // VUE HEBDOMADAIRE
+        window.showWeek = function(weekNum) {
+            currentWeek = weekNum;
+            const container = document.getElementById('weekContainer');
+            const weekStart = getWeekStartDate(2025, weekNum);
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(weekStart);
+                date.setDate(weekStart.getDate() + i);
+                weekDays.push(date);
+            }
+
+            let html = `
+                <div class="week-container">
+                    <div class="week-header">
+                        <div class="week-nav">
+                            <button class="week-nav-btn" onclick="window.showWeek(${Math.max(1, weekNum-1)})"><i class="fas fa-chevron-left"></i></button>
+                            <div class="week-select-group">
+                                <label>Semaine:</label>
+                                <select class="week-select" onchange="window.showWeek(parseInt(this.value))">
+                                    ${Array.from({length: 52}, (_, i) => `<option value="${i+1}" ${i+1 === weekNum ? 'selected' : ''}>S${(i+1).toString().padStart(2, '0')}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="week-title">Semaine ${weekNum.toString().padStart(2, '0')} 2025</div>
+                            <button class="week-nav-btn" onclick="window.showWeek(${Math.min(52, weekNum+1)})"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="week-grid">
+            `;
+
+            ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].forEach(day => {
+                html += `<div class="week-day-header">${day}</div>`;
             });
+
+            weekDays.forEach(date => {
+                const dayPlannings = getWeekPlannings(weekNum);
+                let planningHtml = '';
+                dayPlannings.forEach(item => {
+                    planningHtml += `
+                        <div class="planning-item ${item.statut}">
+                            <div class="planning-left">
+                                <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
+                                <div class="planning-details">${item.heures}H | ${item.effectif}EF | ${item.cout}€</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="week-day-cell">
+                        <div class="week-date">${date.getDate()}/${date.getMonth()+1}</div>
+                        <div class="week-plannings">${planningHtml || '<div style="color:#6c757d; font-style:italic;">Aucun planning</div>'}</div>
+                    </div>
+                `;
+            });
+
+            html += `</div>${createWeekSummary(weekNum)}</div>`;
+            container.innerHTML = html;
+            updateAnalytics('week');
         }
 
-        function showApp() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('app').classList.remove('app-hidden');
-            document.getElementById('userEmail').textContent = user.email;
-            initCalendar();
+        function getWeekPlannings(weekNum) {
+            return Object.values(planningData).flat().filter(item => item.semaine === weekNum);
         }
 
-        function hideApp() {
-            document.getElementById('app').classList.add('app-hidden');
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('loginError').textContent = '';
+        function createWeekSummary(weekNum) {
+            const weekPlannings = getWeekPlannings(weekNum);
+            return `
+                <div class="month-summary">
+                    <h4>Résumé Semaine ${weekNum.toString().padStart(2, '0')}</h4>
+                    <table class="summary-table">
+                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Coût</th><th>Ligne</th><th>Statut</th></tr></thead>
+                        <tbody>
+                            ${weekPlannings.map(item => `
+                                <tr class="${item.statut}">
+                                    <td>S${item.semaine}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
+                                    <td>${item.effectif}</td><td>${item.cout}€</td><td>${item.ligne}</td>
+                                    <td>${getEmoji(item.statut)}</td>
+                                </tr>
+                            `).join('')}
+                            ${weekPlannings.length === 0 ? '<tr><td colspan="7" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            `;
         }
 
-        // 🔥 AUTH STATE LISTENER
-        auth.onAuthStateChanged((firebaseUser) => {
-            if (firebaseUser) {
-                user = firebaseUser;
-                showApp();
-            } else {
-                hideApp();
-            }
-        });
-
-        // 🔥 SECURE DATABASE (SEULEMENT connecté)
-        tasksRef.on('value', (snapshot) => {
-            if (user) {
-                tasks = snapshot.val() || {};
-                generateCalendar();
-                updateSyncStatus(true);
-            }
-        });
-
-        database.ref('.info/connected').on('value', (snap) => {
-            if (user) updateSyncStatus(snap.val() === true);
-        });
-
-        function updateSyncStatus(online) {
-            const status = document.getElementById('syncStatus');
-            status.textContent = online ? '🟢' : '🔴';
-            status.className = `sync-status ${online ? 'online' : 'offline'}`;
-        }
-
-        // 🔥 TOUTES FONCTIONS (IDENTIQUES)
-        function setCurrentMonth(date) {
-            document.getElementById('currentMonth').textContent = date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
-        }
-
-        function initCalendar() { 
-            setCurrentMonth(currentDate); 
-            generateCalendar(); 
-            document.getElementById('taskDate').value = formatDate(currentDate); 
-        }
-
-        function generateCalendar() {
-            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
-            document.getElementById('currentMonth').textContent = 
-                viewMode === 'week' ? `Semaine ${getWeekStart(currentDate).toLocaleDateString('fr-FR')} - ${getWeekEnd(currentDate).toLocaleDateString('fr-FR')}` : currentDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
-            let tableBody = '';
-            if (viewMode === 'week') {
-                const startDate = getWeekStart(currentDate); tableBody += '<tr>';
-                for (let day = 0; day < 7; day++) {
-                    const dayDate = new Date(startDate); dayDate.setDate(startDate.getDate() + day);
-                    const dayKey = formatDate(dayDate); const isCurrentMonth = dayDate.getMonth() === month;
-                    const dayClass = isCurrentMonth ? '' : 'other-month'; const dayNumber = dayDate.getDate();
-                    let taskItems = ''; let taskCount = tasks[dayKey] ? Object.keys(tasks[dayKey]).length : 0;
-                    if (tasks[dayKey]) Object.keys(tasks[dayKey]).forEach(taskId => { 
-                        const task = tasks[dayKey][taskId];
-                        taskItems += `<div class="task-item ${task.status}" onclick="editTask('${dayKey}', '${taskId}')" title="${task.desc}">${task.line} ${getStatusText(task.status)}<span class="delete-icon" onclick="showDeleteConfirm('${dayKey}', '${taskId}', event)">🗑️</span></div>`; 
-                    });
-                    if (taskCount > 5) taskItems += `<div class="task-item" style="background:#95a5a6;color:white">+${taskCount-5}</div>`;
-                    tableBody += `<td class="${dayClass}" onclick="selectDate('${dayKey}')"><div class="task-count">${taskCount}</div><div class="day-number">${dayNumber}</div><div class="day-details">${taskItems}</div></td>`;
-                }
-                tableBody += '</tr>';
-            } else {
-                const firstDay = new Date(year, month, 1); const startDate = new Date(firstDay);
-                startDate.setDate(startDate.getDate() - firstDay.getDay()); let weekDate = new Date(startDate);
-                for (let week = 0; week < 6; week++) {
-                    tableBody += '<tr>'; for (let day = 0; day < 7; day++) {
-                        const dayKey = formatDate(weekDate); const isCurrentMonth = weekDate.getMonth() === month;
-                        const dayClass = isCurrentMonth ? '' : 'other-month'; const dayNumber = weekDate.getDate();
-                        let taskItems = ''; let taskCount = tasks[dayKey] ? Object.keys(tasks[dayKey]).length : 0;
-                        if (tasks[dayKey]) Object.keys(tasks[dayKey]).forEach(taskId => { 
-                            const task = tasks[dayKey][taskId];
-                            taskItems += `<div class="task-item ${task.status}" onclick="editTask('${dayKey}', '${taskId}')" title="${task.desc}">${task.line} ${getStatusText(task.status)}<span class="delete-icon" onclick="showDeleteConfirm('${dayKey}', '${taskId}', event)">🗑️</span></div>`; 
-                        });
-                        if (taskCount > 5) taskItems += `<div class="task-item" style="background:#95a5a6;color:white">+${taskCount-5}</div>`;
-                        tableBody += `<td class="${dayClass}" onclick="selectDate('${dayKey}')"><div class="task-count">${taskCount}</div><div class="day-number">${dayNumber}</div><div class="day-details">${taskItems}</div></td>`;
-                        weekDate.setDate(weekDate.getDate() + 1);
+        // VUE MENSUELLE
+        function initCalendar() {
+            const container = document.getElementById('calendarContainer');
+            let html = '';
+            for (let row = 0; row < 4; row++) {
+                html += '<div class="month-row">';
+                for (let i = 0; i < 3; i++) {
+                    const monthIndex = row * 3 + i;
+                    if (monthIndex < 12) {
+                        html += createMonthCalendar(2025, monthIndex, monthNames[monthIndex]);
                     }
-                    tableBody += '</tr>';
                 }
+                html += '</div>';
             }
-            document.getElementById('calendarBody').innerHTML = tableBody;
+            container.innerHTML = html;
+
+            document.querySelectorAll('.month-header').forEach((header, index) => {
+                header.addEventListener('click', () => {
+                    currentFilter = index;
+                    document.querySelectorAll('.month-header').forEach(h => h.classList.remove('month-active'));
+                    document.querySelectorAll('.month-container').forEach((c, idx) => {
+                        if (idx === index) {
+                            c.classList.remove('month-hidden');
+                            header.classList.add('month-active');
+                        } else {
+                            c.classList.add('month-hidden');
+                        }
+                    });
+                    currentMonth = index;
+                    updateAnalytics('month');
+                });
+            });
+            updateAnalytics('month');
         }
 
-        function saveTask(date, taskData) {
-            if (!user) return;
-            const taskRef = tasksRef.child(date).push();
-            taskData.timestamp = taskRef.key;
-            taskRef.set(taskData).then(() => { alert('✅ Ajoutée !'); });
+        function loadPlanning() {
+            initCalendar();
+            if (document.getElementById('weekView').classList.contains('active')) {
+                window.showWeek(currentWeek);
+            }
         }
 
-        function updateTask(date, taskId, updates) {
-            if (!user) return;
-            tasksRef.child(date).child(taskId).update(updates).then(() => { alert('✅ Modifiée !'); });
+        function createMonthCalendar(year, month, monthName) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            let gridHtml = '<div class="calendar-grid">';
+            ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
+                gridHtml += `<div class="day-header">${day}</div>`;
+            });
+            
+            for (let i = 0; i < firstDay; i++) {
+                gridHtml += '<div class="day-cell"></div>';
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const weekNum = getWeekNumber(date);
+                const monthPlannings = getMonthPlannings(month, weekNum);
+                
+                let planningHtml = '';
+                monthPlannings.forEach(item => {
+                    planningHtml += `<div class="planning-item ${item.statut}">${getEmoji(item.statut)}${item.ligne}</div>`;
+                });
+                
+                gridHtml += `
+                    <div class="day-cell">
+                        <div class="week-number">S${weekNum.toString().padStart(2, '0')}</div>
+                        <div class="day-number">${day}</div>
+                        ${planningHtml}
+                    </div>
+                `;
+            }
+            
+            const totalCells = 42;
+            const filledCells = firstDay + daysInMonth;
+            for (let i = filledCells; i < totalCells; i++) {
+                gridHtml += '<div class="day-cell"></div>';
+            }
+            gridHtml += '</div>';
+            
+            return `
+                <div class="month-container">
+                    <div class="month-header"><h3 class="month-title">${monthName} 2025</h3></div>
+                    ${gridHtml}
+                </div>
+            `;
         }
 
-        function deleteTask(date, taskId) {
-            if (!user) return;
-            tasksRef.child(date).child(taskId).remove().then(() => { alert('🗑️ Supprimée !'); });
+        function getMonthPlannings(month, week) { return planningData[`${month}_${week}`] || []; }
+        function getMonthSummary(month) { return Object.values(planningData).flat().filter(item => item.month === month); }
+        function getEmoji(statut) { return {planifier: '📋', realiser: '✅', raporter: '🔴'}[statut] || ''; }
+        function getMonthName(index) { return monthNames[index] || 'Inconnu'; }
+        function getWeekNumber(date) {
+            const startDate = new Date(date.getFullYear(), 0, 1);
+            const days = Math.floor((date - startDate) / (24 * 60 * 60 * 1000));
+            return Math.ceil((days + startDate.getDay() + 1) / 7);
+        }
+        function getMonthFromWeek(week) {
+            const monthMap = [[1,5],[6,9],[10,13],[14,17],[18,22],[23,26],[27,30],[31,35],[36,39],[40,43],[44,47],[48,52]];
+            for (let i = 0; i < monthMap.length; i++) {
+                if (week >= monthMap[i][0] && week <= monthMap[i][1]) return i;
+            }
+            return 0;
+        }
+        function getWeekStartDate(year, week) {
+            const jan1 = new Date(year, 0, 1);
+            const daysToAdd = (week - 1) * 7;
+            const weekStart = new Date(jan1);
+            weekStart.setDate(jan1.getDate() + daysToAdd);
+            const dayOfWeek = weekStart.getDay();
+            weekStart.setDate(weekStart.getDate() - dayOfWeek + 1);
+            return weekStart;
         }
 
-        // RESTE DES FONCTIONS IDENTIQUES...
-        function thisWeek() { viewMode = 'week'; currentDate = new Date(); generateCalendar(); document.getElementById('taskDate').value = formatDate(currentDate); }
-        function getWeekStart(date) { const start = new Date(date); const day = start.getDay(); const diff = start.getDate() - day + (day === 0 ? -6 : 1); start.setDate(diff); return start; }
-        function getWeekEnd(date) { const end = new Date(getWeekStart(date)); end.setDate(end.getDate() + 6); return end; }
-        function prevMonth() { if (viewMode === 'week') return; currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(); }
-        function nextMonth() { if (viewMode === 'week') return; currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(); }
-        function today() { viewMode = 'month'; currentDate = new Date(); generateCalendar(); document.getElementById('taskDate').value = formatDate(currentDate); }
-        function editTask(date, taskId) { const task = findTask(date, taskId); if (!task) return; editingTaskId = taskId; document.getElementById('taskDate').value = date; document.getElementById('taskLine').value = task.line; document.getElementById('taskDesc').value = task.desc || ''; document.getElementById('taskStatus').value = task.status; document.getElementById('newDate').value = task.newDate || ''; document.getElementById('taskPerson').value = task.person || ''; toggleComment(); toggleForm(); document.getElementById('formSection').classList.add('edit-mode'); document.getElementById('formTitle').innerHTML = '✏️ ÉDITER'; document.getElementById('formTitle').classList.add('edit'); document.getElementById('formMode').style.display = 'inline'; document.getElementById('submitBtn').textContent = '💾'; document.getElementById('deleteBtn').style.display = 'inline-block'; }
-        function findTask(date, taskId) { return tasks[date] ? tasks[date][taskId] : null; }
-        function toggleForm() { const formSection = document.getElementById('formSection'); const toggleBtn = document.getElementById('formToggle'); if (formSection.classList.contains('open')) { cancelEdit(); } else { formSection.classList.add('open'); toggleBtn.textContent = '✕'; toggleBtn.classList.add('close'); } }
-        function cancelEdit() { editingTaskId = null; document.getElementById('formSection').classList.remove('edit-mode', 'open'); document.getElementById('formTitle').innerHTML = '➕ NOUVELLE'; document.getElementById('formTitle').classList.remove('edit'); document.getElementById('formMode').style.display = 'none'; document.getElementById('submitBtn').textContent = '✅'; document.getElementById('deleteBtn').style.display = 'none'; document.getElementById('formToggle').textContent = '➕'; document.getElementById('formToggle').classList.remove('close'); document.getElementById('taskLine').value = ''; document.getElementById('taskStatus').value = ''; document.getElementById('taskDesc').value = ''; document.getElementById('taskPerson').value = ''; document.getElementById('newDate').value = ''; document.getElementById('commentSection').classList.remove('show'); }
-        function submitTask() { const date = document.getElementById('taskDate').value; const line = document.getElementById('taskLine').value; const status = document.getElementById('taskStatus').value; const desc = document.getElementById('taskDesc').value; const newDate = document.getElementById('newDate').value; const person = document.getElementById('taskPerson').value; if (!date || !line || !status) { alert('⚠️ Champs obligatoires !'); return; } const taskData = {line, status, desc, newDate: newDate || null, person}; if (editingTaskId) { updateTask(date, editingTaskId, taskData); } else { saveTask(date, taskData); } generateCalendar(); cancelEdit(); }
-        function showDeleteConfirm(date, taskId, event) { event.stopPropagation(); deletingTaskId = taskId; const task = findTask(date, taskId); document.getElementById('deleteTaskInfo').innerHTML = `<strong>${task.line} ${getStatusText(task.status)}</strong>`; document.getElementById('deleteModal').classList.add('show'); }
-        function confirmDelete() { if (deletingTaskId) { const date = document.getElementById('taskDate').value; deleteTask(date, deletingTaskId); generateCalendar(); cancelEdit(); } document.getElementById('deleteModal').classList.remove('show'); }
-        function cancelDelete() { document.getElementById('deleteModal').classList.remove('show'); }
-        function toggleComment() { const status = document.getElementById('taskStatus').value; const commentSection = document.getElementById('commentSection'); if (status === 'raporte') commentSection.classList.add('show'); else commentSection.classList.remove('show'); }
-        function selectDate(date) { document.getElementById('taskDate').value = date; editingTaskId = null; document.getElementById('formTitle').innerHTML = '➕ NOUVELLE'; document.getElementById('formTitle').classList.remove('edit'); document.getElementById('formMode').style.display = 'none'; document.getElementById('submitBtn').textContent = '✅'; document.getElementById('deleteBtn').style.display = 'none'; toggleForm(); }
-        function getStatusText(status) { const texts = {planifie: 'Planifié', realise: 'Réalisé', retard: 'Retard', raporte: 'Rapporter'}; return texts[status] || ''; }
-        function formatDate(date) { const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; }
-        function exportExcel() { const wb = XLSX.utils.book_new(); const wsData = [["Date", "Ligne", "Description", "Statut", "Responsable", "Date Report"]]; Object.keys(tasks).forEach(date => { if (tasks[date]) Object.keys(tasks[date]).forEach(taskId => { const task = tasks[date][taskId]; wsData.push([date, task.line, task.desc || '', getStatusText(task.status), task.person || '', task.newDate || '']); }); }); const ws = XLSX.utils.aoa_to_sheet(wsData); XLSX.utils.book_append_sheet(wb, ws, "Planning"); XLSX.writeFile(wb, `Planning_${currentDate.toISOString().slice(0,7)}.xlsx`); }
-        function printCalendar() { window.print(); }
-        function clearAll() { if (confirm('Supprimer TOUT ?')) { tasksRef.remove().then(() => { alert('🗑️ Tout supprimé !'); }); } }
+        // EXPORT
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const allPlannings = Object.values(planningData).flat();
+            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Coût', 'Ligne', 'Statut', 'Date']];
+            
+            allPlannings.forEach(item => {
+                excelData.push([
+                    `S${item.semaine}`, monthNames[item.month], item.heures, item.effectif,
+                    item.cout || 0, item.ligne, item.statut,
+                    new Date(item.createdAt).toLocaleDateString('fr-FR')
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Planning 2025');
+            XLSX.writeFile(wb, `TV-DASH_Analytique_2025_${new Date().toISOString().split('T')[0]}.xlsx`);
+            alert('✅ ANALYTIQUE EXCEL EXPORTÉ !');
+        });
+
+        // INIT
+        loadPlanning();
     </script>
 </body>
 </html>
