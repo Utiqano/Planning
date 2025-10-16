@@ -4,938 +4,265 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planning Calendrier</title>
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-        }
-
-        /* NAVBAR */
-        .navbar {
-            background: #2c3e50;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-        }
-
-        .nav-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .nav-btn {
-            padding: 8px 16px;
-            background: #3498db;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .nav-btn:hover {
-            background: #2980b9;
-        }
-
-        /* BOUTON FORMULAIRE */
-        .form-toggle {
-            position: fixed;
-            top: 90px;
-            right: 20px;
-            z-index: 1000;
-            width: 50px;
-            height: 50px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-
-        .form-toggle:hover {
-            background: #229954;
-            transform: scale(1.1);
-        }
-
-        .form-toggle.close {
-            background: #e74c3c;
-        }
-
-        /* MODAL SUPPRESSION */
-        .delete-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-        }
-
-        .delete-modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .delete-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 400px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        }
-
-        .delete-btn {
-            padding: 10px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .delete-yes {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .delete-no {
-            background: #95a5a6;
-            color: white;
-        }
-
-        /* LÉGENDE DES COULEURS */
-        .legend {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: bold;
-            min-width: 120px;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 2px solid #333;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .navbar { background: #2c3e50; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .nav-title { font-size: 1.2rem; font-weight: bold; }
+        .nav-buttons { display: flex; gap: 5px; }
+        .nav-btn { padding: 6px 10px; background: #3498db; border: none; color: white; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .nav-btn:hover { background: #2980b9; }
+        .sync-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+        .online { background: #27ae60; color: white; }
+        .offline { background: #e74c3c; color: white; }
+        .form-toggle { position: fixed; top: 70px; right: 10px; z-index: 1000; width: 40px; height: 40px; background: #27ae60; color: white; border: none; border-radius: 50%; font-size: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .form-toggle:hover { background: #229954; transform: scale(1.05); }
+        .form-toggle.close { background: #e74c3c; }
+        .delete-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
+        .delete-modal.show { display: flex; align-items: center; justify-content: center; }
+        .delete-content { background: white; padding: 20px; border-radius: 8px; text-align: center; max-width: 300px; box-shadow: 0 3px 15px rgba(0,0,0,0.3); }
+        .delete-btn { padding: 8px 16px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; }
+        .delete-yes { background: #e74c3c; color: white; }
+        .delete-no { background: #95a5a6; color: white; }
+        .legend { background: white; padding: 8px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; min-width: 80px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; border: 1px solid #333; }
         .planifie-color { background: #f1c40f; }
         .realise-color { background: #27ae60; }
         .retard-color { background: #e74c3c; }
         .raporte-color { background: #e67e22; }
-
-        /* CONTAINER PRINCIPAL */
-        .main-container {
-            display: flex;
-            height: calc(100vh - 70px);
-            margin-top: 60px;
-        }
-
-        /* FORMULAIRE */
-        .form-section {
-            width: 30%;
-            background: white;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #ddd;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            position: fixed;
-            height: calc(100vh - 130px);
-            z-index: 999;
-            top: 70px;
-        }
-
-        .form-section.open {
-            transform: translateX(0);
-        }
-
-        .form-section.edit-mode {
-            background: #fff3cd;
-            border-left: 5px solid #f39c12;
-        }
-
-        .form-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .form-title {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .form-title.edit {
-            color: #f39c12;
-        }
-
-        .form-mode {
-            background: #f39c12;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .form-group textarea {
-            height: 80px;
-            resize: vertical;
-        }
-
-        .form-group select {
-            font-size: 16px;
-            padding: 12px;
-        }
-
-        .comment-section {
-            display: none;
-            margin-top: 10px;
-            background: #fff3cd;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ffeaa7;
-        }
-
-        .comment-section.show {
-            display: block;
-        }
-
-        .submit-btn, .delete-task-btn {
-            width: 48%;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .submit-btn {
-            background: #27ae60;
-            color: white;
-        }
-
-        .submit-btn:hover {
-            background: #229954;
-        }
-
-        .delete-task-btn {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .delete-task-btn:hover {
-            background: #c0392b;
-        }
-
-        /* CALENDRIER */
-        .calendar-section {
-            width: 100%;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .month-nav {
-            display: flex;
-            gap: 10px;
-        }
-
-        .month-btn {
-            padding: 8px 12px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .month-btn:hover {
-            background: #2980b9;
-        }
-
-        .week-btn {
-            background: #f39c12 !important;
-        }
-
-        .week-btn:hover {
-            background: #e67e22 !important;
-        }
-
-        .current-month {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        /* TABLEAU CALENDRIER */
-        .calendar-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .calendar-table th,
-        .calendar-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .calendar-table th {
-            background: #34495e;
-            color: white;
-        }
-
-        .calendar-table td {
-            height: 140px;
-            vertical-align: top;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .calendar-table td:hover {
-            background: #f8f9fa;
-        }
-
-        .day-number {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-weight: bold;
-            font-size: 14px;
-            color: #2c3e50;
-        }
-
-        .day-details {
-            margin-top: 25px;
-            font-size: 11px;
-        }
-
-        .task-item {
-            margin-bottom: 2px;
-            padding: 2px 5px;
-            border-radius: 4px;
-            color: white;
-            font-size: 9px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .task-item:hover {
-            transform: scale(1.05);
-        }
-
+        .main-container { display: flex; height: calc(100vh - 55px); margin-top: 55px; }
+        .form-section { width: 28%; background: white; padding: 15px; overflow-y: auto; border-right: 1px solid #ddd; transform: translateX(-100%); transition: transform 0.3s ease; position: fixed; height: calc(100vh - 110px); z-index: 999; top: 55px; }
+        .form-section.open { transform: translateX(0); }
+        .form-section.edit-mode { background: #fff3cd; border-left: 4px solid #f39c12; }
+        .form-close { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-size: 14px; }
+        .form-title { text-align: center; margin-bottom: 15px; color: #2c3e50; font-size: 16px; }
+        .form-title.edit { color: #f39c12; }
+        .form-mode { background: #f39c12; color: white; padding: 3px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 3px; font-weight: bold; color: #555; font-size: 12px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; }
+        .form-group textarea { height: 60px; resize: vertical; }
+        .comment-section { display: none; margin-top: 8px; background: #fff3cd; padding: 8px; border-radius: 3px; border: 1px solid #ffeaa7; }
+        .comment-section.show { display: block; }
+        .submit-btn, .delete-task-btn { width: 48%; padding: 10px; border: none; border-radius: 3px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+        .submit-btn { background: #27ae60; color: white; }
+        .submit-btn:hover { background: #229954; }
+        .delete-task-btn { background: #e74c3c; color: white; }
+        .delete-task-btn:hover { background: #c0392b; }
+        .calendar-section { width: 100%; padding: 15px; overflow-y: auto; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .month-nav { display: flex; gap: 3px; flex-wrap: wrap; }
+        .month-btn { padding: 6px 8px; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        .month-btn:hover { background: #2980b9; }
+        .week-btn { background: #f39c12 !important; }
+        .week-btn:hover { background: #e67e22 !important; }
+        .current-month { font-size: 1.2rem; font-weight: bold; color: #2c3e50; }
+        .calendar-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
+        .calendar-table th, .calendar-table td { border: 1px solid #ddd; padding: 4px; text-align: center; font-size: 11px; }
+        .calendar-table th { background: #34495e; color: white; padding: 6px; }
+        .calendar-table td { height: 110px; vertical-align: top; position: relative; cursor: pointer; transition: background 0.2s; }
+        .calendar-table td:hover { background: #f8f9fa; }
+        .day-number { position: absolute; top: 2px; right: 2px; font-weight: bold; font-size: 12px; color: #2c3e50; }
+        .day-details { margin-top: 20px; font-size: 9px; }
+        .task-item { margin-bottom: 1px; padding: 1px 3px; border-radius: 2px; color: white; font-size: 8px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; position: relative; cursor: pointer; }
+        .task-item:hover { transform: scale(1.03); }
         .planifie { background: #f1c40f !important; color: #000 !important; }
         .realise { background: #27ae60 !important; }
         .retard { background: #e74c3c !important; }
         .raporte { background: #e67e22 !important; }
-
-        .other-month {
-            color: #bdc3c7;
-            background: #ecf0f1;
-        }
-
-        .task-count {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-        }
-
-        .delete-icon {
-            position: absolute;
-            right: 2px;
-            top: 1px;
-            font-size: 8px;
-            cursor: pointer;
-            opacity: 0.7;
-        }
-
-        .delete-icon:hover {
-            opacity: 1;
-        }
+        .other-month { color: #bdc3c7; background: #ecf0f1; }
+        .task-count { position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,0.7); color: white; padding: 1px 4px; border-radius: 8px; font-size: 8px; }
+        .delete-icon { position: absolute; right: 1px; top: 0; font-size: 7px; cursor: pointer; opacity: 0.7; }
+        .delete-icon:hover { opacity: 1; }
     </style>
 </head>
 <body>
-    <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="nav-title">📅 PLANNING CALENDRIER</div>
+        <div class="nav-title">📅 PLANNING</div>
         <div class="nav-buttons">
-            <button class="nav-btn" onclick="exportExcel()">📊 Excel</button>
-            <button class="nav-btn" onclick="printCalendar()">🖨️ Imprimer</button>
-            <button class="nav-btn" onclick="clearAll()">🗑️ Vider Tout</button>
+            <button class="nav-btn" onclick="exportExcel()">📊</button>
+            <button class="nav-btn" onclick="printCalendar()">🖨️</button>
+            <button class="nav-btn" onclick="clearAll()">🗑️</button>
+            <span class="sync-status online" id="syncStatus">🔴</span>
         </div>
     </nav>
-
-    <!-- BOUTON OUVRIR/FERMER FORMULAIRE -->
     <button class="form-toggle" id="formToggle" onclick="toggleForm()">➕</button>
-
-    <!-- MODAL SUPPRESSION -->
     <div class="delete-modal" id="deleteModal">
         <div class="delete-content">
-            <h3>🗑️ Supprimer cette tâche ?</h3>
+            <h3>🗑️ Supprimer ?</h3>
             <p id="deleteTaskInfo"></p>
-            <br>
-            <button class="delete-btn delete-yes" onclick="confirmDelete()">✅ Oui</button>
-            <button class="delete-btn delete-no" onclick="cancelDelete()">❌ Non</button>
+            <button class="delete-btn delete-yes" onclick="confirmDelete()">✅</button>
+            <button class="delete-btn delete-no" onclick="cancelDelete()">❌</button>
         </div>
     </div>
-
     <div class="main-container">
-        <!-- FORMULAIRE (MASQUÉ PAR DÉFAUT) -->
         <div class="form-section" id="formSection">
             <button class="form-close" onclick="cancelEdit()">✕</button>
-            <h2 class="form-title" id="formTitle">➕ NOUVELLE TÂCHE</h2>
-            <span class="form-mode" id="formMode" style="display:none">✏️ MODE ÉDITION</span>
-            
-            <div class="form-group">
-                <label>📅 Date :</label>
-                <input type="date" id="taskDate" required>
-            </div>
-
-            <div class="form-group">
-                <label>🏭 Ligne :</label>
-                <select id="taskLine" required>
-                    <option value="">Choisir une ligne...</option>
-                    <option value="50 T">50 T</option>
-                    <option value="80 T">80 T</option>
-                    <option value="120 T">120 T</option>
-                    <option value="125 T">125 T</option>
-                    <option value="520 T">520 T</option>
-                    <option value="400 T">400 T</option>
-                    <option value="450 T">450 T</option>
-                    <option value="550 T">550 T</option>
-                    <option value="420 T">420 T</option>
-                    <option value="A12">A12</option>
-                    <option value="Boy 2">Boy 2</option>
-                    <option value="Boy 3">Boy 3</option>
-                    <option value="F06">F06</option>
-                    <option value="L101">L101</option>
-                    <option value="L108">L108</option>
-                    <option value="F31">F31</option>
-                    <option value="F87">F87</option>
-                    <option value="F27">F27</option>
-                    <option value="F15">F15</option>
-                    <option value="F73">F73</option>
-                    <option value="L84">L84</option>
-                    <option value="F85">F85</option>
-                    <option value="F86">F86</option>
-                    <option value="F99">F99</option>
-                    <option value="F83">F83</option>
-                    <option value="F02">F02</option>
-                    <option value="F01">F01</option>
-                    <option value="L76">L76</option>
-                    <option value="L77">L77</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>📝 Description :</label>
-                <textarea id="taskDesc" placeholder="Détails de la tâche..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>🚦 Statut :</label>
-                <select id="taskStatus" onchange="toggleComment()" required>
-                    <option value="">Choisir...</option>
-                    <option value="planifie">⏳ Planifié</option>
-                    <option value="realise">✅ Réalisé</option>
-                    <option value="retard">⏰ En Retard</option>
-                    <option value="raporte">📅 Rapporter</option>
-                </select>
-            </div>
-
-            <div class="comment-section" id="commentSection">
-                <label>📅 Nouvelle Date :</label>
-                <input type="date" id="newDate">
-                <small style="color: #666;">Date de report</small>
-            </div>
-
-            <div class="form-group">
-                <label>👤 Responsable :</label>
-                <input type="text" id="taskPerson" placeholder="Ex: Jean Dupont">
-            </div>
-
-            <div style="display:flex; gap:4%;">
-                <button class="submit-btn" id="submitBtn" onclick="submitTask()">✅ SAUVEGARDER</button>
-                <button class="delete-task-btn" id="deleteBtn" onclick="showDeleteModal()" style="display:none;">🗑️ SUPPRIMER</button>
-            </div>
+            <h2 class="form-title" id="formTitle">➕ NOUVELLE</h2>
+            <span class="form-mode" id="formMode" style="display:none">✏️ ÉDITION</span>
+            <div class="form-group"><label>📅 Date</label><input type="date" id="taskDate" required></div>
+            <div class="form-group"><label>🏭 Ligne</label><select id="taskLine" required><option value="">Ligne...</option><option value="50 T">50 T</option><option value="80 T">80 T</option><option value="120 T">120 T</option><option value="125 T">125 T</option><option value="520 T">520 T</option><option value="400 T">400 T</option><option value="450 T">450 T</option><option value="550 T">550 T</option><option value="420 T">420 T</option><option value="A12">A12</option><option value="Boy 2">Boy 2</option><option value="Boy 3">Boy 3</option><option value="F06">F06</option><option value="L101">L101</option><option value="L108">L108</option><option value="F31">F31</option><option value="F87">F87</option><option value="F27">F27</option><option value="F15">F15</option><option value="F73">F73</option><option value="L84">L84</option><option value="F85">F85</option><option value="F86">F86</option><option value="F99">F99</option><option value="F83">F83</option><option value="F02">F02</option><option value="F01">F01</option><option value="L76">L76</option><option value="L77">L77</option></select></div>
+            <div class="form-group"><label>📝 Description</label><textarea id="taskDesc" placeholder="Détails..."></textarea></div>
+            <div class="form-group"><label>🚦 Statut</label><select id="taskStatus" onchange="toggleComment()" required><option value="">...</option><option value="planifie">⏳ Planifié</option><option value="realise">✅ Réalisé</option><option value="retard">⏰ Retard</option><option value="raporte">📅 Rapporter</option></select></div>
+            <div class="comment-section" id="commentSection"><label>📅 Nouvelle Date</label><input type="date" id="newDate"><small>Date report</small></div>
+            <div class="form-group"><label>👤 Responsable</label><input type="text" id="taskPerson" placeholder="Jean"></div>
+            <div style="display:flex; gap:4%;"><button class="submit-btn" id="submitBtn" onclick="submitTask()">✅</button><button class="delete-task-btn" id="deleteBtn" onclick="showDeleteModal()" style="display:none;">🗑️</button></div>
         </div>
-
-        <!-- CALENDRIER -->
         <div class="calendar-section">
-            <!-- LÉGENDE DES COULEURS -->
             <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color planifie-color"></div>
-                    <span>⏳ Planifié</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color realise-color"></div>
-                    <span>✅ Réalisé</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color retard-color"></div>
-                    <span>⏰ Retard</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color raporte-color"></div>
-                    <span>📅 Rapporter</span>
-                </div>
+                <div class="legend-item"><div class="legend-color planifie-color"></div>⏳ Planifié</div>
+                <div class="legend-item"><div class="legend-color realise-color"></div>✅ Réalisé</div>
+                <div class="legend-item"><div class="legend-color retard-color"></div>⏰ Retard</div>
+                <div class="legend-item"><div class="legend-color raporte-color"></div>📅 Rapporter</div>
             </div>
-
             <div class="calendar-header">
                 <div class="month-nav">
-                    <button class="month-btn" onclick="prevMonth()">◀ Mois Précédent</button>
+                    <button class="month-btn" onclick="prevMonth()">◀</button>
                     <button class="month-btn" onclick="today()">Aujourd'hui</button>
                     <button class="month-btn week-btn" onclick="thisWeek()">🗓️ Semaine</button>
-                    <button class="month-btn" onclick="nextMonth()">Mois Suivant ▶</button>
+                    <button class="month-btn" onclick="nextMonth()">▶</button>
                 </div>
                 <div class="current-month" id="currentMonth"></div>
             </div>
-
             <table class="calendar-table" id="calendarTable">
-                <thead>
-                    <tr>
-                        <th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
                 <tbody id="calendarBody"></tbody>
             </table>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        let currentDate = new Date();
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || {};
-        let editingTaskId = null;
-        let deletingTaskId = null;
-        let viewMode = 'month'; // 'month' ou 'week'
+        // 🔥 FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
+            authDomain: "tvdash-9e6b3.firebaseapp.com",
+            databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
+            projectId: "tvdash-9e6b3",
+            storageBucket: "tvdash-9e6b3.firebasestorage.app",
+            messagingSenderId: "307274554235",
+            appId: "1:307274554235:web:862dc484ee93254383fbde",
+            measurementId: "G-0DJ7V5HPWD"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const tasksRef = database.ref('tasks');
 
-        // Initialiser le calendrier
-        function initCalendar() {
-            setCurrentMonth(currentDate);
-            generateCalendar();
-            document.getElementById('taskDate').value = formatDate(currentDate);
+        let currentDate = new Date();
+        let tasks = {};
+        let editingTaskId = null; 
+        let deletingTaskId = null; 
+        let viewMode = 'month';
+
+        // 🔥 FIX #1: setCurrentMonth AJOUTÉ
+        function setCurrentMonth(date) {
+            document.getElementById('currentMonth').textContent = date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
         }
 
-        // Générer le calendrier (MOIS ou SEMAINE)
+        // 🔥 SYNCHRO REALTIME
+        tasksRef.on('value', (snapshot) => {
+            tasks = snapshot.val() || {};
+            generateCalendar();
+            updateSyncStatus(true);
+        });
+
+        database.ref('.info/connected').on('value', (snap) => {
+            updateSyncStatus(snap.val() === true);
+        });
+
+        function updateSyncStatus(online) {
+            const status = document.getElementById('syncStatus');
+            status.textContent = online ? '🟢' : '🔴';
+            status.className = `sync-status ${online ? 'online' : 'offline'}`;
+        }
+
+        // 🔥 TOUTES FONCTIONS
+        function initCalendar() { 
+            setCurrentMonth(currentDate); 
+            generateCalendar(); 
+            document.getElementById('taskDate').value = formatDate(currentDate); 
+        }
+
         function generateCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
+            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
             document.getElementById('currentMonth').textContent = 
-                viewMode === 'week' 
-                ? `Semaine du ${getWeekStart(currentDate).toLocaleDateString('fr-FR')} au ${getWeekEnd(currentDate).toLocaleDateString('fr-FR')}`
-                : currentDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
-
+                viewMode === 'week' ? `Semaine ${getWeekStart(currentDate).toLocaleDateString('fr-FR')} - ${getWeekEnd(currentDate).toLocaleDateString('fr-FR')}` : currentDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
             let tableBody = '';
-            let date = new Date(currentDate);
-
             if (viewMode === 'week') {
-                // AFFICHAGE SEMAINE UNIQUEMENT
-                const startDate = getWeekStart(currentDate);
-                tableBody += '<tr>';
+                const startDate = getWeekStart(currentDate); tableBody += '<tr>';
                 for (let day = 0; day < 7; day++) {
-                    const dayDate = new Date(startDate);
-                    dayDate.setDate(startDate.getDate() + day);
-                    const dayKey = formatDate(dayDate);
-                    const isCurrentMonth = dayDate.getMonth() === month;
-                    const dayClass = isCurrentMonth ? '' : 'other-month';
-                    const dayNumber = dayDate.getDate();
-
-                    let taskItems = '';
-                    let taskCount = 0;
-                    
-                    if (tasks[dayKey]) {
-                        taskCount = tasks[dayKey].length;
-                        tasks[dayKey].forEach((task, index) => {
-                            if (index < 5) {
-                                const statusText = getStatusText(task.status);
-                                const taskId = task.timestamp;
-                                taskItems += `
-                                    <div class="task-item ${task.status}" 
-                                         onclick="editTask('${dayKey}', '${taskId}')"
-                                         title="${task.desc || ''}\n${task.person || ''}">
-                                        ${task.line} ${statusText}
-                                        <span class="delete-icon" onclick="showDeleteConfirm('${dayKey}', '${taskId}', event)">🗑️</span>
-                                    </div>
-                                `;
-                            }
-                        });
-                        if (taskCount > 5) {
-                            taskItems += `<div class="task-item" style="background:#95a5a6;color:white">+${taskCount-5} autres</div>`;
-                        }
-                    }
-
-                    tableBody += `
-                        <td class="${dayClass}" onclick="selectDate('${dayKey}')">
-                            <div class="task-count">${taskCount}</div>
-                            <div class="day-number">${dayNumber}</div>
-                            <div class="day-details">${taskItems}</div>
-                        </td>
-                    `;
+                    const dayDate = new Date(startDate); dayDate.setDate(startDate.getDate() + day);
+                    const dayKey = formatDate(dayDate); const isCurrentMonth = dayDate.getMonth() === month;
+                    const dayClass = isCurrentMonth ? '' : 'other-month'; const dayNumber = dayDate.getDate();
+                    let taskItems = ''; let taskCount = tasks[dayKey] ? Object.keys(tasks[dayKey]).length : 0;
+                    if (tasks[dayKey]) Object.keys(tasks[dayKey]).forEach(taskId => { 
+                        const task = tasks[dayKey][taskId];
+                        taskItems += `<div class="task-item ${task.status}" onclick="editTask('${dayKey}', '${taskId}')" title="${task.desc}">${task.line} ${getStatusText(task.status)}<span class="delete-icon" onclick="showDeleteConfirm('${dayKey}', '${taskId}', event)">🗑️</span></div>`; 
+                    });
+                    if (taskCount > 5) taskItems += `<div class="task-item" style="background:#95a5a6;color:white">+${taskCount-5}</div>`;
+                    tableBody += `<td class="${dayClass}" onclick="selectDate('${dayKey}')"><div class="task-count">${taskCount}</div><div class="day-number">${dayNumber}</div><div class="day-details">${taskItems}</div></td>`;
                 }
                 tableBody += '</tr>';
             } else {
-                // AFFICHAGE MOIS COMPLET
-                const firstDay = new Date(year, month, 1);
-                const startDate = new Date(firstDay);
-                startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-                let weekDate = new Date(startDate);
+                const firstDay = new Date(year, month, 1); const startDate = new Date(firstDay);
+                startDate.setDate(startDate.getDate() - firstDay.getDay()); let weekDate = new Date(startDate);
                 for (let week = 0; week < 6; week++) {
-                    tableBody += '<tr>';
-                    for (let day = 0; day < 7; day++) {
-                        const dayKey = formatDate(weekDate);
-                        const isCurrentMonth = weekDate.getMonth() === month;
-                        const dayClass = isCurrentMonth ? '' : 'other-month';
-                        const dayNumber = weekDate.getDate();
-
-                        let taskItems = '';
-                        let taskCount = 0;
-                        
-                        if (tasks[dayKey]) {
-                            taskCount = tasks[dayKey].length;
-                            tasks[dayKey].forEach((task, index) => {
-                                if (index < 5) {
-                                    const statusText = getStatusText(task.status);
-                                    const taskId = task.timestamp;
-                                    taskItems += `
-                                        <div class="task-item ${task.status}" 
-                                             onclick="editTask('${dayKey}', '${taskId}')"
-                                             title="${task.desc || ''}\n${task.person || ''}">
-                                            ${task.line} ${statusText}
-                                            <span class="delete-icon" onclick="showDeleteConfirm('${dayKey}', '${taskId}', event)">🗑️</span>
-                                        </div>
-                                    `;
-                                }
-                            });
-                            if (taskCount > 5) {
-                                taskItems += `<div class="task-item" style="background:#95a5a6;color:white">+${taskCount-5} autres</div>`;
-                            }
-                        }
-
-                        tableBody += `
-                            <td class="${dayClass}" onclick="selectDate('${dayKey}')">
-                                <div class="task-count">${taskCount}</div>
-                                <div class="day-number">${dayNumber}</div>
-                                <div class="day-details">${taskItems}</div>
-                            </td>
-                        `;
+                    tableBody += '<tr>'; for (let day = 0; day < 7; day++) {
+                        const dayKey = formatDate(weekDate); const isCurrentMonth = weekDate.getMonth() === month;
+                        const dayClass = isCurrentMonth ? '' : 'other-month'; const dayNumber = weekDate.getDate();
+                        let taskItems = ''; let taskCount = tasks[dayKey] ? Object.keys(tasks[dayKey]).length : 0;
+                        if (tasks[dayKey]) Object.keys(tasks[dayKey]).forEach(taskId => { 
+                            const task = tasks[dayKey][taskId];
+                            taskItems += `<div class="task-item ${task.status}" onclick="editTask('${dayKey}', '${taskId}')" title="${task.desc}">${task.line} ${getStatusText(task.status)}<span class="delete-icon" onclick="showDeleteConfirm('${dayKey}', '${taskId}', event)">🗑️</span></div>`; 
+                        });
+                        if (taskCount > 5) taskItems += `<div class="task-item" style="background:#95a5a6;color:white">+${taskCount-5}</div>`;
+                        tableBody += `<td class="${dayClass}" onclick="selectDate('${dayKey}')"><div class="task-count">${taskCount}</div><div class="day-number">${dayNumber}</div><div class="day-details">${taskItems}</div></td>`;
                         weekDate.setDate(weekDate.getDate() + 1);
                     }
                     tableBody += '</tr>';
                 }
             }
-
             document.getElementById('calendarBody').innerHTML = tableBody;
         }
 
-        // SEMAINE COURANTE
-        function thisWeek() {
-            viewMode = 'week';
-            currentDate = new Date();
-            generateCalendar();
-            document.getElementById('taskDate').value = formatDate(currentDate);
-        }
-
-        // Début de semaine (Lundi)
-        function getWeekStart(date) {
-            const start = new Date(date);
-            const day = start.getDay();
-            const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-            start.setDate(diff);
-            return start;
-        }
-
-        // Fin de semaine (Dimanche)
-        function getWeekEnd(date) {
-            const end = new Date(getWeekStart(date));
-            end.setDate(end.getDate() + 6);
-            return end;
-        }
-
-        // Navigation mois (ignore en mode semaine)
-        function prevMonth() {
-            if (viewMode === 'week') return;
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            generateCalendar();
-        }
-
-        function nextMonth() {
-            if (viewMode === 'week') return;
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            generateCalendar();
-        }
-
-        function today() { 
-            viewMode = 'month';
-            currentDate = new Date(); 
-            generateCalendar(); 
-            document.getElementById('taskDate').value = formatDate(currentDate); 
-        }
-
-        // ... (Toutes les autres fonctions restent identiques)
-        function editTask(date, taskId) {
-            const task = findTask(date, taskId);
-            if (!task) return;
-
-            editingTaskId = taskId;
-            
-            document.getElementById('taskDate').value = date;
-            document.getElementById('taskLine').value = task.line;
-            document.getElementById('taskDesc').value = task.desc || '';
-            document.getElementById('taskStatus').value = task.status;
-            document.getElementById('newDate').value = task.newDate || '';
-            document.getElementById('taskPerson').value = task.person || '';
-
-            toggleComment();
-            toggleForm();
-            
-            document.getElementById('formSection').classList.add('edit-mode');
-            document.getElementById('formTitle').innerHTML = '✏️ ÉDITER TÂCHE';
-            document.getElementById('formTitle').classList.add('edit');
-            document.getElementById('formMode').style.display = 'inline';
-            document.getElementById('submitBtn').textContent = '💾 MODIFIER';
-            document.getElementById('deleteBtn').style.display = 'inline-block';
-        }
-
-        function findTask(date, taskId) {
-            if (tasks[date]) return tasks[date].find(task => task.timestamp === taskId);
-            return null;
-        }
-
-        function toggleForm() {
-            const formSection = document.getElementById('formSection');
-            const toggleBtn = document.getElementById('formToggle');
-            
-            if (formSection.classList.contains('open')) {
-                cancelEdit();
-            } else {
-                formSection.classList.add('open');
-                toggleBtn.textContent = '✕';
-                toggleBtn.classList.add('close');
-            }
-        }
-
-        function cancelEdit() {
-            editingTaskId = null;
-            document.getElementById('formSection').classList.remove('edit-mode', 'open');
-            document.getElementById('formTitle').innerHTML = '➕ NOUVELLE TÂCHE';
-            document.getElementById('formTitle').classList.remove('edit');
-            document.getElementById('formMode').style.display = 'none';
-            document.getElementById('submitBtn').textContent = '✅ AJOUTER';
-            document.getElementById('deleteBtn').style.display = 'none';
-            document.getElementById('formToggle').textContent = '➕';
-            document.getElementById('formToggle').classList.remove('close');
-            document.getElementById('taskLine').value = '';
-            document.getElementById('taskStatus').value = '';
-            document.getElementById('taskDesc').value = '';
-            document.getElementById('taskPerson').value = '';
-            document.getElementById('newDate').value = '';
-            document.getElementById('commentSection').classList.remove('show');
-        }
-
-        function submitTask() {
-            const date = document.getElementById('taskDate').value;
-            const line = document.getElementById('taskLine').value;
-            const status = document.getElementById('taskStatus').value;
-            const desc = document.getElementById('taskDesc').value;
-            const newDate = document.getElementById('newDate').value;
-            const person = document.getElementById('taskPerson').value;
-
-            if (!date || !line || !status) {
-                alert('⚠️ Remplissez tous les champs obligatoires !');
-                return;
-            }
-
-            if (editingTaskId) {
-                updateTask(date, editingTaskId, {line, status, desc, newDate, person});
-                alert('✅ Tâche modifiée avec succès !');
-            } else {
-                if (!tasks[date]) tasks[date] = [];
-                const task = {line, status, desc, newDate: newDate || null, person, timestamp: Date.now().toString()};
-                tasks[date].push(task);
-                alert('✅ Tâche ajoutée avec succès !');
-            }
-
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            generateCalendar();
-            cancelEdit();
+        function saveTask(date, taskData) {
+            const taskRef = tasksRef.child(date).push();
+            taskData.timestamp = taskRef.key;
+            taskRef.set(taskData).then(() => { alert('✅ Ajoutée !'); });
         }
 
         function updateTask(date, taskId, updates) {
-            if (tasks[date]) {
-                const taskIndex = tasks[date].findIndex(task => task.timestamp === taskId);
-                if (taskIndex !== -1) tasks[date][taskIndex] = {...tasks[date][taskIndex], ...updates};
-            }
+            tasksRef.child(date).child(taskId).update(updates).then(() => { alert('✅ Modifiée !'); });
         }
 
-        function showDeleteConfirm(date, taskId, event) {
-            event.stopPropagation();
-            deletingTaskId = taskId;
-            const task = findTask(date, taskId);
-            document.getElementById('deleteTaskInfo').innerHTML = `<strong>${task.line} ${getStatusText(task.status)}</strong><br>${task.desc ? task.desc.substring(0, 50) + '...' : ''}`;
-            document.getElementById('deleteModal').classList.add('show');
+        function deleteTask(date, taskId) {
+            tasksRef.child(date).child(taskId).remove().then(() => { alert('🗑️ Supprimée !'); });
         }
 
-        function confirmDelete() {
-            if (deletingTaskId && editingTaskId === deletingTaskId) {
-                const date = document.getElementById('taskDate').value;
-                if (tasks[date]) {
-                    tasks[date] = tasks[date].filter(task => task.timestamp !== deletingTaskId);
-                    if (tasks[date].length === 0) delete tasks[date];
-                }
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-                generateCalendar();
-                cancelEdit();
-                alert('🗑️ Tâche supprimée !');
-            }
-            document.getElementById('deleteModal').classList.remove('show');
-        }
-
-        function cancelDelete() {
-            document.getElementById('deleteModal').classList.remove('show');
-        }
-
-        function toggleComment() {
-            const status = document.getElementById('taskStatus').value;
-            const commentSection = document.getElementById('commentSection');
-            if (status === 'raporte') commentSection.classList.add('show');
-            else commentSection.classList.remove('show');
-        }
-
-        function selectDate(date) {
-            document.getElementById('taskDate').value = date;
-            editingTaskId = null;
-            document.getElementById('formTitle').innerHTML = '➕ NOUVELLE TÂCHE';
-            document.getElementById('formTitle').classList.remove('edit');
-            document.getElementById('formMode').style.display = 'none';
-            document.getElementById('submitBtn').textContent = '✅ AJOUTER';
-            document.getElementById('deleteBtn').style.display = 'none';
-            toggleForm();
-        }
-
-        function getStatusText(status) {
-            const texts = {planifie: 'Planifié', realise: 'Réalisé', retard: 'Retard', raporte: 'Rapporter'};
-            return texts[status] || '';
-        }
-
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function exportExcel() {
-            const wb = XLSX.utils.book_new();
-            const wsData = [["Date", "Ligne", "Description", "Statut", "Responsable", "Date Report"]];
-            Object.keys(tasks).forEach(date => {
-                tasks[date].forEach(task => {
-                    wsData.push([date, task.line, task.desc || '', getStatusText(task.status), task.person || '', task.newDate || '']);
-                });
-            });
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            XLSX.utils.book_append_sheet(wb, ws, "Planning");
-            XLSX.writeFile(wb, `Planning_${currentDate.toISOString().slice(0,7)}.xlsx`);
-        }
-
+        function thisWeek() { viewMode = 'week'; currentDate = new Date(); generateCalendar(); document.getElementById('taskDate').value = formatDate(currentDate); }
+        function getWeekStart(date) { const start = new Date(date); const day = start.getDay(); const diff = start.getDate() - day + (day === 0 ? -6 : 1); start.setDate(diff); return start; }
+        function getWeekEnd(date) { const end = new Date(getWeekStart(date)); end.setDate(end.getDate() + 6); return end; }
+        function prevMonth() { if (viewMode === 'week') return; currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(); }
+        function nextMonth() { if (viewMode === 'week') return; currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(); }
+        function today() { viewMode = 'month'; currentDate = new Date(); generateCalendar(); document.getElementById('taskDate').value = formatDate(currentDate); }
+        function editTask(date, taskId) { const task = findTask(date, taskId); if (!task) return; editingTaskId = taskId; document.getElementById('taskDate').value = date; document.getElementById('taskLine').value = task.line; document.getElementById('taskDesc').value = task.desc || ''; document.getElementById('taskStatus').value = task.status; document.getElementById('newDate').value = task.newDate || ''; document.getElementById('taskPerson').value = task.person || ''; toggleComment(); toggleForm(); document.getElementById('formSection').classList.add('edit-mode'); document.getElementById('formTitle').innerHTML = '✏️ ÉDITER'; document.getElementById('formTitle').classList.add('edit'); document.getElementById('formMode').style.display = 'inline'; document.getElementById('submitBtn').textContent = '💾'; document.getElementById('deleteBtn').style.display = 'inline-block'; }
+        function findTask(date, taskId) { return tasks[date] ? tasks[date][taskId] : null; }
+        function toggleForm() { const formSection = document.getElementById('formSection'); const toggleBtn = document.getElementById('formToggle'); if (formSection.classList.contains('open')) { cancelEdit(); } else { formSection.classList.add('open'); toggleBtn.textContent = '✕'; toggleBtn.classList.add('close'); } }
+        function cancelEdit() { editingTaskId = null; document.getElementById('formSection').classList.remove('edit-mode', 'open'); document.getElementById('formTitle').innerHTML = '➕ NOUVELLE'; document.getElementById('formTitle').classList.remove('edit'); document.getElementById('formMode').style.display = 'none'; document.getElementById('submitBtn').textContent = '✅'; document.getElementById('deleteBtn').style.display = 'none'; document.getElementById('formToggle').textContent = '➕'; document.getElementById('formToggle').classList.remove('close'); document.getElementById('taskLine').value = ''; document.getElementById('taskStatus').value = ''; document.getElementById('taskDesc').value = ''; document.getElementById('taskPerson').value = ''; document.getElementById('newDate').value = ''; document.getElementById('commentSection').classList.remove('show'); }
+        function submitTask() { const date = document.getElementById('taskDate').value; const line = document.getElementById('taskLine').value; const status = document.getElementById('taskStatus').value; const desc = document.getElementById('taskDesc').value; const newDate = document.getElementById('newDate').value; const person = document.getElementById('taskPerson').value; if (!date || !line || !status) { alert('⚠️ Champs obligatoires !'); return; } const taskData = {line, status, desc, newDate: newDate || null, person}; if (editingTaskId) { updateTask(date, editingTaskId, taskData); } else { saveTask(date, taskData); } generateCalendar(); cancelEdit(); }
+        function showDeleteConfirm(date, taskId, event) { event.stopPropagation(); deletingTaskId = taskId; const task = findTask(date, taskId); document.getElementById('deleteTaskInfo').innerHTML = `<strong>${task.line} ${getStatusText(task.status)}</strong>`; document.getElementById('deleteModal').classList.add('show'); }
+        function confirmDelete() { if (deletingTaskId) { const date = document.getElementById('taskDate').value; deleteTask(date, deletingTaskId); generateCalendar(); cancelEdit(); } document.getElementById('deleteModal').classList.remove('show'); }
+        function cancelDelete() { document.getElementById('deleteModal').classList.remove('show'); }
+        function toggleComment() { const status = document.getElementById('taskStatus').value; const commentSection = document.getElementById('commentSection'); if (status === 'raporte') commentSection.classList.add('show'); else commentSection.classList.remove('show'); }
+        function selectDate(date) { document.getElementById('taskDate').value = date; editingTaskId = null; document.getElementById('formTitle').innerHTML = '➕ NOUVELLE'; document.getElementById('formTitle').classList.remove('edit'); document.getElementById('formMode').style.display = 'none'; document.getElementById('submitBtn').textContent = '✅'; document.getElementById('deleteBtn').style.display = 'none'; toggleForm(); }
+        function getStatusText(status) { const texts = {planifie: 'Planifié', realise: 'Réalisé', retard: 'Retard', raporte: 'Rapporter'}; return texts[status] || ''; }
+        function formatDate(date) { const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; }
+        function exportExcel() { const wb = XLSX.utils.book_new(); const wsData = [["Date", "Ligne", "Description", "Statut", "Responsable", "Date Report"]]; Object.keys(tasks).forEach(date => { if (tasks[date]) Object.keys(tasks[date]).forEach(taskId => { const task = tasks[date][taskId]; wsData.push([date, task.line, task.desc || '', getStatusText(task.status), task.person || '', task.newDate || '']); }); }); const ws = XLSX.utils.aoa_to_sheet(wsData); XLSX.utils.book_append_sheet(wb, ws, "Planning"); XLSX.writeFile(wb, `Planning_${currentDate.toISOString().slice(0,7)}.xlsx`); }
         function printCalendar() { window.print(); }
-
-        function clearAll() {
-            if (confirm('Voulez-vous vraiment supprimer TOUTES les tâches ?')) {
-                tasks = {}; localStorage.removeItem('tasks'); generateCalendar(); alert('🗑️ Toutes les tâches supprimées !');
-            }
-        }
-
-        // Initialisation
+        function clearAll() { if (confirm('Supprimer TOUT ?')) { tasksRef.remove().then(() => { alert('🗑️ Tout supprimé !'); }); } }
         initCalendar();
     </script>
 </body>
