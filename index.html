@@ -6,10 +6,28 @@
     <title>Planning Calendrier</title>
     <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; }
+
+        /* LOGIN PAGE */
+        .login-page { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(135deg, #2c3e50, #3498db); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 300px; }
+        .login-title { color: #2c3e50; margin-bottom: 20px; font-size: 24px; }
+        .login-group { margin-bottom: 15px; text-align: left; }
+        .login-group label { display: block; margin-bottom: 5px; color: #555; font-weight: bold; }
+        .login-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        .login-btn { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .login-btn:hover { background: #229954; }
+        .login-error { color: #e74c3c; margin-top: 10px; font-size: 14px; }
+        .loading { background: #95a5a6; cursor: not-allowed; }
+
+        /* APP HIDDEN */
+        .app-hidden { display: none !important; }
+
+        /* NAVBAR + APP (RESTE IDENTIQUE) */
         .navbar { background: #2c3e50; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; color: white; }
         .nav-title { font-size: 1.2rem; font-weight: bold; }
         .nav-buttons { display: flex; gap: 5px; }
@@ -81,59 +99,81 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-title">📅 PLANNING</div>
-        <div class="nav-buttons">
-            <button class="nav-btn" onclick="exportExcel()">📊</button>
-            <button class="nav-btn" onclick="printCalendar()">🖨️</button>
-            <button class="nav-btn" onclick="clearAll()">🗑️</button>
-            <span class="sync-status online" id="syncStatus">🔴</span>
-        </div>
-    </nav>
-    <button class="form-toggle" id="formToggle" onclick="toggleForm()">➕</button>
-    <div class="delete-modal" id="deleteModal">
-        <div class="delete-content">
-            <h3>🗑️ Supprimer ?</h3>
-            <p id="deleteTaskInfo"></p>
-            <button class="delete-btn delete-yes" onclick="confirmDelete()">✅</button>
-            <button class="delete-btn delete-no" onclick="cancelDelete()">❌</button>
+    <!-- 🔥 LOGIN PAGE -->
+    <div class="login-page" id="loginPage">
+        <div class="login-box">
+            <h2 class="login-title">🔐 PLANNING</h2>
+            <div class="login-group">
+                <label>📧 Email</label>
+                <input type="email" id="loginEmail" placeholder="exemple@equipe.com" required>
+            </div>
+            <div class="login-group">
+                <label>🔑 Mot de passe</label>
+                <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+            </div>
+            <button class="login-btn" onclick="signIn()">🚀 CONNEXION</button>
+            <div class="login-error" id="loginError"></div>
         </div>
     </div>
-    <div class="main-container">
-        <div class="form-section" id="formSection">
-            <button class="form-close" onclick="cancelEdit()">✕</button>
-            <h2 class="form-title" id="formTitle">➕ NOUVELLE</h2>
-            <span class="form-mode" id="formMode" style="display:none">✏️ ÉDITION</span>
-            <div class="form-group"><label>📅 Date</label><input type="date" id="taskDate" required></div>
-            <div class="form-group"><label>🏭 Ligne</label><select id="taskLine" required><option value="">Ligne...</option><option value="50 T">50 T</option><option value="80 T">80 T</option><option value="120 T">120 T</option><option value="125 T">125 T</option><option value="520 T">520 T</option><option value="400 T">400 T</option><option value="450 T">450 T</option><option value="550 T">550 T</option><option value="420 T">420 T</option><option value="A12">A12</option><option value="Boy 2">Boy 2</option><option value="Boy 3">Boy 3</option><option value="F06">F06</option><option value="L101">L101</option><option value="L108">L108</option><option value="F31">F31</option><option value="F87">F87</option><option value="F27">F27</option><option value="F15">F15</option><option value="F73">F73</option><option value="L84">L84</option><option value="F85">F85</option><option value="F86">F86</option><option value="F99">F99</option><option value="F83">F83</option><option value="F02">F02</option><option value="F01">F01</option><option value="L76">L76</option><option value="L77">L77</option></select></div>
-            <div class="form-group"><label>📝 Description</label><textarea id="taskDesc" placeholder="Détails..."></textarea></div>
-            <div class="form-group"><label>🚦 Statut</label><select id="taskStatus" onchange="toggleComment()" required><option value="">...</option><option value="planifie">⏳ Planifié</option><option value="realise">✅ Réalisé</option><option value="retard">⏰ Retard</option><option value="raporte">📅 Rapporter</option></select></div>
-            <div class="comment-section" id="commentSection"><label>📅 Nouvelle Date</label><input type="date" id="newDate"><small>Date report</small></div>
-            <div class="form-group"><label>👤 Responsable</label><input type="text" id="taskPerson" placeholder="Jean"></div>
-            <div style="display:flex; gap:4%;"><button class="submit-btn" id="submitBtn" onclick="submitTask()">✅</button><button class="delete-task-btn" id="deleteBtn" onclick="showDeleteModal()" style="display:none;">🗑️</button></div>
-        </div>
-        <div class="calendar-section">
-            <div class="legend">
-                <div class="legend-item"><div class="legend-color planifie-color"></div>⏳ Planifié</div>
-                <div class="legend-item"><div class="legend-color realise-color"></div>✅ Réalisé</div>
-                <div class="legend-item"><div class="legend-color retard-color"></div>⏰ Retard</div>
-                <div class="legend-item"><div class="legend-color raporte-color"></div>📅 Rapporter</div>
+
+    <!-- 🔥 APP (cachée au début) -->
+    <div id="app" class="app-hidden">
+        <nav class="navbar">
+            <div class="nav-title">📅 PLANNING <span style="font-size:10px;">👤 <span id="userEmail"></span></span></div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="exportExcel()">📊</button>
+                <button class="nav-btn" onclick="printCalendar()">🖨️</button>
+                <button class="nav-btn" onclick="clearAll()">🗑️</button>
+                <span class="sync-status online" id="syncStatus">🔴</span>
+                <button class="nav-btn" onclick="signOut()">🚪</button>
             </div>
-            <div class="calendar-header">
-                <div class="month-nav">
-                    <button class="month-btn" onclick="prevMonth()">◀</button>
-                    <button class="month-btn" onclick="today()">Aujourd'hui</button>
-                    <button class="month-btn week-btn" onclick="thisWeek()">🗓️ Semaine</button>
-                    <button class="month-btn" onclick="nextMonth()">▶</button>
+        </nav>
+        <button class="form-toggle" id="formToggle" onclick="toggleForm()">➕</button>
+        <div class="delete-modal" id="deleteModal">
+            <div class="delete-content">
+                <h3>🗑️ Supprimer ?</h3>
+                <p id="deleteTaskInfo"></p>
+                <button class="delete-btn delete-yes" onclick="confirmDelete()">✅</button>
+                <button class="delete-btn delete-no" onclick="cancelDelete()">❌</button>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="form-section" id="formSection">
+                <button class="form-close" onclick="cancelEdit()">✕</button>
+                <h2 class="form-title" id="formTitle">➕ NOUVELLE</h2>
+                <span class="form-mode" id="formMode" style="display:none">✏️ ÉDITION</span>
+                <div class="form-group"><label>📅 Date</label><input type="date" id="taskDate" required></div>
+                <div class="form-group"><label>🏭 Ligne</label><select id="taskLine" required><option value="">Ligne...</option><option value="50 T">50 T</option><option value="80 T">80 T</option><option value="120 T">120 T</option><option value="125 T">125 T</option><option value="520 T">520 T</option><option value="400 T">400 T</option><option value="450 T">450 T</option><option value="550 T">550 T</option><option value="420 T">420 T</option><option value="A12">A12</option><option value="Boy 2">Boy 2</option><option value="Boy 3">Boy 3</option><option value="F06">F06</option><option value="L101">L101</option><option value="L108">L108</option><option value="F31">F31</option><option value="F87">F87</option><option value="F27">F27</option><option value="F15">F15</option><option value="F73">F73</option><option value="L84">L84</option><option value="F85">F85</option><option value="F86">F86</option><option value="F99">F99</option><option value="F83">F83</option><option value="F02">F02</option><option value="F01">F01</option><option value="L76">L76</option><option value="L77">L77</option></select></div>
+                <div class="form-group"><label>📝 Description</label><textarea id="taskDesc" placeholder="Détails..."></textarea></div>
+                <div class="form-group"><label>🚦 Statut</label><select id="taskStatus" onchange="toggleComment()" required><option value="">...</option><option value="planifie">⏳ Planifié</option><option value="realise">✅ Réalisé</option><option value="retard">⏰ Retard</option><option value="raporte">📅 Rapporter</option></select></div>
+                <div class="comment-section" id="commentSection"><label>📅 Nouvelle Date</label><input type="date" id="newDate"><small>Date report</small></div>
+                <div class="form-group"><label>👤 Responsable</label><input type="text" id="taskPerson" placeholder="Jean"></div>
+                <div style="display:flex; gap:4%;"><button class="submit-btn" id="submitBtn" onclick="submitTask()">✅</button><button class="delete-task-btn" id="deleteBtn" onclick="showDeleteModal()" style="display:none;">🗑️</button></div>
+            </div>
+            <div class="calendar-section">
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color planifie-color"></div>⏳ Planifié</div>
+                    <div class="legend-item"><div class="legend-color realise-color"></div>✅ Réalisé</div>
+                    <div class="legend-item"><div class="legend-color retard-color"></div>⏰ Retard</div>
+                    <div class="legend-item"><div class="legend-color raporte-color"></div>📅 Rapporter</div>
                 </div>
-                <div class="current-month" id="currentMonth"></div>
+                <div class="calendar-header">
+                    <div class="month-nav">
+                        <button class="month-btn" onclick="prevMonth()">◀</button>
+                        <button class="month-btn" onclick="today()">Aujourd'hui</button>
+                        <button class="month-btn week-btn" onclick="thisWeek()">🗓️ Semaine</button>
+                        <button class="month-btn" onclick="nextMonth()">▶</button>
+                    </div>
+                    <div class="current-month" id="currentMonth"></div>
+                </div>
+                <table class="calendar-table" id="calendarTable">
+                    <thead><tr><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
+                    <tbody id="calendarBody"></tbody>
+                </table>
             </div>
-            <table class="calendar-table" id="calendarTable">
-                <thead><tr><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
-                <tbody id="calendarBody"></tbody>
-            </table>
         </div>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         // 🔥 FIREBASE CONFIG
@@ -148,6 +188,7 @@
             measurementId: "G-0DJ7V5HPWD"
         };
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const database = firebase.database();
         const tasksRef = database.ref('tasks');
 
@@ -156,21 +197,77 @@
         let editingTaskId = null; 
         let deletingTaskId = null; 
         let viewMode = 'month';
+        let user = null;
 
-        // 🔥 FIX #1: setCurrentMonth AJOUTÉ
-        function setCurrentMonth(date) {
-            document.getElementById('currentMonth').textContent = date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
+        // 🔥 AUTHENTICATION
+        function signIn() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.querySelector('.login-btn');
+            const error = document.getElementById('loginError');
+            
+            if (!email || !password) {
+                error.textContent = '⚠️ Email et mot de passe requis !';
+                return;
+            }
+            
+            btn.textContent = '⏳ Connexion...';
+            btn.classList.add('loading');
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    user = userCredential.user;
+                    showApp();
+                })
+                .catch((error) => {
+                    error.textContent = `❌ ${error.message}`;
+                    btn.textContent = '🚀 CONNEXION';
+                    btn.classList.remove('loading');
+                });
         }
 
-        // 🔥 SYNCHRO REALTIME
+        function signOut() {
+            auth.signOut().then(() => {
+                hideApp();
+            });
+        }
+
+        function showApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('app').classList.remove('app-hidden');
+            document.getElementById('userEmail').textContent = user.email;
+            initCalendar();
+        }
+
+        function hideApp() {
+            document.getElementById('app').classList.add('app-hidden');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').textContent = '';
+        }
+
+        // 🔥 AUTH STATE LISTENER
+        auth.onAuthStateChanged((firebaseUser) => {
+            if (firebaseUser) {
+                user = firebaseUser;
+                showApp();
+            } else {
+                hideApp();
+            }
+        });
+
+        // 🔥 SECURE DATABASE (SEULEMENT connecté)
         tasksRef.on('value', (snapshot) => {
-            tasks = snapshot.val() || {};
-            generateCalendar();
-            updateSyncStatus(true);
+            if (user) {
+                tasks = snapshot.val() || {};
+                generateCalendar();
+                updateSyncStatus(true);
+            }
         });
 
         database.ref('.info/connected').on('value', (snap) => {
-            updateSyncStatus(snap.val() === true);
+            if (user) updateSyncStatus(snap.val() === true);
         });
 
         function updateSyncStatus(online) {
@@ -179,7 +276,11 @@
             status.className = `sync-status ${online ? 'online' : 'offline'}`;
         }
 
-        // 🔥 TOUTES FONCTIONS
+        // 🔥 TOUTES FONCTIONS (IDENTIQUES)
+        function setCurrentMonth(date) {
+            document.getElementById('currentMonth').textContent = date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
+        }
+
         function initCalendar() { 
             setCurrentMonth(currentDate); 
             generateCalendar(); 
@@ -229,19 +330,23 @@
         }
 
         function saveTask(date, taskData) {
+            if (!user) return;
             const taskRef = tasksRef.child(date).push();
             taskData.timestamp = taskRef.key;
             taskRef.set(taskData).then(() => { alert('✅ Ajoutée !'); });
         }
 
         function updateTask(date, taskId, updates) {
+            if (!user) return;
             tasksRef.child(date).child(taskId).update(updates).then(() => { alert('✅ Modifiée !'); });
         }
 
         function deleteTask(date, taskId) {
+            if (!user) return;
             tasksRef.child(date).child(taskId).remove().then(() => { alert('🗑️ Supprimée !'); });
         }
 
+        // RESTE DES FONCTIONS IDENTIQUES...
         function thisWeek() { viewMode = 'week'; currentDate = new Date(); generateCalendar(); document.getElementById('taskDate').value = formatDate(currentDate); }
         function getWeekStart(date) { const start = new Date(date); const day = start.getDay(); const diff = start.getDate() - day + (day === 0 ? -6 : 1); start.setDate(diff); return start; }
         function getWeekEnd(date) { const end = new Date(getWeekStart(date)); end.setDate(end.getDate() + 6); return end; }
@@ -263,7 +368,6 @@
         function exportExcel() { const wb = XLSX.utils.book_new(); const wsData = [["Date", "Ligne", "Description", "Statut", "Responsable", "Date Report"]]; Object.keys(tasks).forEach(date => { if (tasks[date]) Object.keys(tasks[date]).forEach(taskId => { const task = tasks[date][taskId]; wsData.push([date, task.line, task.desc || '', getStatusText(task.status), task.person || '', task.newDate || '']); }); }); const ws = XLSX.utils.aoa_to_sheet(wsData); XLSX.utils.book_append_sheet(wb, ws, "Planning"); XLSX.writeFile(wb, `Planning_${currentDate.toISOString().slice(0,7)}.xlsx`); }
         function printCalendar() { window.print(); }
         function clearAll() { if (confirm('Supprimer TOUT ?')) { tasksRef.remove().then(() => { alert('🗑️ Tout supprimé !'); }); } }
-        initCalendar();
     </script>
 </body>
 </html>
