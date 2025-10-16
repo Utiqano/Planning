@@ -33,7 +33,6 @@
         .add-form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 20px auto; max-width: 1400px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; }
         .form-grid input, .form-grid select { padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px; }
-        .cout-field { background: #fff3cd; border-color: #ffeaa7; }
         .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .add-btn:hover { transform: translateY(-2px); }
         .legend-analytics { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); margin: 20px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -132,7 +131,6 @@
                     </select>
                     <input type="number" id="heures" placeholder="Heures" min="0">
                     <input type="number" id="effectif" placeholder="Effectif" min="0">
-                    <input type="number" id="cout" class="cout-field" placeholder="Coût €" min="0">
                     <select id="ligne">
                         <option value="">Ligne</option>
                         <option value="F01">F01</option><option value="F02">F02</option><option value="F06">F06</option><option value="F15">F15</option>
@@ -168,7 +166,6 @@
                     <h4><i class="fas fa-chart-bar"></i> Analytique</h4>
                     <div class="analytic-item"><div>Total Heures</div><div class="analytic-value" id="totalHeures">0</div></div>
                     <div class="analytic-item"><div>Moyenne/Technicien</div><div class="analytic-value" id="moyenneTech">0 H</div></div>
-                    <div class="analytic-item"><div>Total Coût</div><div class="analytic-value" id="totalCout">0 €</div></div>
                     <div class="analytic-item"><div>% Réalisation</div><div class="analytic-value" id="pourcentageReal">0%</div></div>
                 </div>
             </div>
@@ -183,15 +180,7 @@
     </div>
 
     <script>
-        // FIREBASE LOCAL ANTI-CORS (CODEPEN)
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
-            authDomain: "tvdash-9e6b3.firebaseapp.com",
-            databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
-            projectId: "tvdash-9e6b3"
-        };
-
-        // SIMULATION LOCAL (100% FONCTIONNEL SANS CORS)
+        // SIMULATION LOCAL (CODEPEN)
         let planningData = JSON.parse(localStorage.getItem('tvDashData')) || {};
         let currentUser = { uid: 'demo' };
         let currentFilter = 'all';
@@ -242,12 +231,11 @@
             updateAnalytics('month');
         });
 
-        // AJOUTER
+        // AJOUTER (SANS COUT)
         document.getElementById('addBtn').addEventListener('click', () => {
             const semaine = parseInt(document.getElementById('semaine').value) || 0;
             const heures = parseInt(document.getElementById('heures').value) || 0;
             const effectif = parseInt(document.getElementById('effectif').value) || 0;
-            const cout = parseInt(document.getElementById('cout').value) || 0;
             const ligne = document.getElementById('ligne').value;
             const statut = document.getElementById('statut').value;
 
@@ -258,7 +246,7 @@
 
             const data = {
                 id: Date.now(),
-                semaine, heures, effectif, cout, ligne, statut,
+                semaine, heures, effectif, ligne, statut,
                 userId: currentUser.uid,
                 createdAt: new Date().toISOString(),
                 month: getMonthFromWeek(semaine)
@@ -272,7 +260,6 @@
             document.getElementById('semaine').value = '';
             document.getElementById('heures').value = '';
             document.getElementById('effectif').value = '';
-            document.getElementById('cout').value = '';
             document.getElementById('ligne').value = '';
             document.getElementById('statut').value = '';
             
@@ -285,7 +272,7 @@
             if (document.getElementById('monthView').classList.contains('active')) initCalendar();
         });
 
-        // ANALYTIQUES
+        // ANALYTIQUES (SANS COUT)
         function updateAnalytics(viewType) {
             let data = [];
             if (viewType === 'week') {
@@ -296,18 +283,16 @@
 
             const totalHeures = data.reduce((sum, item) => sum + item.heures, 0);
             const totalEffectif = data.reduce((sum, item) => sum + item.effectif, 0);
-            const totalCout = data.reduce((sum, item) => sum + (item.cout || 0), 0);
             const realiserHeures = data.filter(item => item.statut === 'realiser').reduce((sum, item) => sum + item.heures, 0);
             const moyenneTech = totalEffectif > 0 ? (totalHeures / totalEffectif).toFixed(1) : 0;
             const pourcentageReal = totalHeures > 0 ? ((realiserHeures / totalHeures) * 100).toFixed(1) : 0;
 
             document.getElementById('totalHeures').textContent = totalHeures;
             document.getElementById('moyenneTech').textContent = moyenneTech + ' H';
-            document.getElementById('totalCout').textContent = totalCout.toLocaleString() + ' €';
             document.getElementById('pourcentageReal').textContent = pourcentageReal + '%';
         }
 
-        // VUE HEBDOMADAIRE
+        // VUE HEBDOMADAIRE (SANS COUT)
         window.showWeek = function(weekNum) {
             currentWeek = weekNum;
             const container = document.getElementById('weekContainer');
@@ -349,7 +334,7 @@
                         <div class="planning-item ${item.statut}">
                             <div class="planning-left">
                                 <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
-                                <div class="planning-details">${item.heures}H | ${item.effectif}EF | ${item.cout}€</div>
+                                <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
                             </div>
                         </div>
                     `;
@@ -378,16 +363,16 @@
                 <div class="month-summary">
                     <h4>Résumé Semaine ${weekNum.toString().padStart(2, '0')}</h4>
                     <table class="summary-table">
-                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Coût</th><th>Ligne</th><th>Statut</th></tr></thead>
+                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th></tr></thead>
                         <tbody>
                             ${weekPlannings.map(item => `
                                 <tr class="${item.statut}">
                                     <td>S${item.semaine}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
-                                    <td>${item.effectif}</td><td>${item.cout}€</td><td>${item.ligne}</td>
+                                    <td>${item.effectif}</td><td>${item.ligne}</td>
                                     <td>${getEmoji(item.statut)}</td>
                                 </tr>
                             `).join('')}
-                            ${weekPlannings.length === 0 ? '<tr><td colspan="7" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
+                            ${weekPlannings.length === 0 ? '<tr><td colspan="6" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -509,15 +494,15 @@
             return weekStart;
         }
 
-        // EXPORT
+        // EXPORT (SANS COUT)
         document.getElementById('exportBtn').addEventListener('click', () => {
             const allPlannings = Object.values(planningData).flat();
-            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Coût', 'Ligne', 'Statut', 'Date']];
+            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date']];
             
             allPlannings.forEach(item => {
                 excelData.push([
                     `S${item.semaine}`, monthNames[item.month], item.heures, item.effectif,
-                    item.cout || 0, item.ligne, item.statut,
+                    item.ligne, item.statut,
                     new Date(item.createdAt).toLocaleDateString('fr-FR')
                 ]);
             });
