@@ -179,27 +179,62 @@
         </div>
     </div>
 
-    <script>
-        // SIMULATION LOCAL (CODEPEN)
-        let planningData = JSON.parse(localStorage.getItem('tvDashData')) || {};
-        let currentUser = { uid: 'demo' };
+    <script type="module">
+        // FIREBASE v10 (CODEPEN COMPATIBLE)
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getDatabase, ref, push, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
+            authDomain: "tvdash-9e6b3.firebaseapp.com",
+            databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
+            projectId: "tvdash-9e6b3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        
+        let currentUser = null;
+        let planningData = {};
         let currentFilter = 'all';
         let currentWeek = 1;
         let currentMonth = 0;
         const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-        // LOGIN DEMO
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        window.showWeek = function(weekNum) { showWeek(weekNum); };
+
+        // LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            initCalendar();
-            loadPlanning();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                errorEl.textContent = '';
+            } catch (error) {
+                errorEl.textContent = '❌ ' + error.message;
+            }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                initCalendar();
+                loadPlanning();
+            } else {
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('dashboard').style.display = 'none';
+            }
         });
 
         // NAVIGATION
@@ -218,7 +253,7 @@
             document.getElementById('monthView').classList.remove('active');
             document.getElementById('weekViewBtn').classList.add('active');
             document.getElementById('monthViewBtn').classList.remove('active');
-            window.showWeek(currentWeek);
+            showWeek(currentWeek);
             updateAnalytics('week');
         });
 
@@ -231,8 +266,8 @@
             updateAnalytics('month');
         });
 
-        // AJOUTER (SANS COUT)
-        document.getElementById('addBtn').addEventListener('click', () => {
+        // AJOUTER
+        document.getElementById('addBtn').addEventListener('click', async () => {
             const semaine = parseInt(document.getElementById('semaine').value) || 0;
             const heures = parseInt(document.getElementById('heures').value) || 0;
             const effectif = parseInt(document.getElementById('effectif').value) || 0;
@@ -245,34 +280,50 @@
             }
 
             const data = {
-                id: Date.now(),
                 semaine, heures, effectif, ligne, statut,
                 userId: currentUser.uid,
                 createdAt: new Date().toISOString(),
                 month: getMonthFromWeek(semaine)
             };
 
-            const key = `${data.month}_${data.semaine}`;
-            if (!planningData[key]) planningData[key] = [];
-            planningData[key].push(data);
-            localStorage.setItem('tvDashData', JSON.stringify(planningData));
-
-            document.getElementById('semaine').value = '';
-            document.getElementById('heures').value = '';
-            document.getElementById('effectif').value = '';
-            document.getElementById('ligne').value = '';
-            document.getElementById('statut').value = '';
-            
-            alert('✅ AJOUTÉ dans ' + getMonthName(data.month) + ' !');
-            
-            if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
-                window.showWeek(semaine);
+            try {
+                await push(ref(database, `planning/${currentUser.uid}`), data);
+                document.getElementById('semaine').value = '';
+                document.getElementById('heures').value = '';
+                document.getElementById('effectif').value = '';
+                document.getElementById('ligne').value = '';
+                document.getElementById('statut').value = '';
+                alert('✅ AJOUTÉ dans ' + getMonthName(data.month) + ' !');
+                if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
+                    showWeek(semaine);
+                }
+                updateAnalytics(document.getElementById('weekView').classList.contains('active') ? 'week' : 'month');
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
             }
-            updateAnalytics(document.getElementById('weekView').classList.contains('active') ? 'week' : 'month');
-            if (document.getElementById('monthView').classList.contains('active')) initCalendar();
         });
 
-        // ANALYTIQUES (SANS COUT)
+        // LOAD DATA
+        function loadPlanning() {
+            const planningRef = ref(database, `planning/${currentUser.uid}`);
+            onValue(planningRef, (snapshot) => {
+                planningData = {};
+                const data = snapshot.val();
+                if (data) {
+                    Object.values(data).forEach(item => {
+                        const key = `${item.month}_${item.semaine}`;
+                        if (!planningData[key]) planningData[key] = [];
+                        planningData[key].push(item);
+                    });
+                }
+                initCalendar();
+                if (document.getElementById('weekView').classList.contains('active')) {
+                    showWeek(currentWeek);
+                }
+            });
+        }
+
+        // ANALYTIQUES
         function updateAnalytics(viewType) {
             let data = [];
             if (viewType === 'week') {
@@ -292,8 +343,8 @@
             document.getElementById('pourcentageReal').textContent = pourcentageReal + '%';
         }
 
-        // VUE HEBDOMADAIRE (SANS COUT)
-        window.showWeek = function(weekNum) {
+        // VUE HEBDOMADAIRE
+        function showWeek(weekNum) {
             currentWeek = weekNum;
             const container = document.getElementById('weekContainer');
             const weekStart = getWeekStartDate(2025, weekNum);
@@ -414,13 +465,6 @@
             updateAnalytics('month');
         }
 
-        function loadPlanning() {
-            initCalendar();
-            if (document.getElementById('weekView').classList.contains('active')) {
-                window.showWeek(currentWeek);
-            }
-        }
-
         function createMonthCalendar(year, month, monthName) {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDay = new Date(year, month, 1).getDay();
@@ -494,7 +538,7 @@
             return weekStart;
         }
 
-        // EXPORT (SANS COUT)
+        // EXPORT
         document.getElementById('exportBtn').addEventListener('click', () => {
             const allPlannings = Object.values(planningData).flat();
             const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date']];
@@ -513,9 +557,6 @@
             XLSX.writeFile(wb, `TV-DASH_Analytique_2025_${new Date().toISOString().split('T')[0]}.xlsx`);
             alert('✅ ANALYTIQUE EXCEL EXPORTÉ !');
         });
-
-        // INIT
-        loadPlanning();
     </script>
 </body>
 </html>
