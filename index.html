@@ -21,7 +21,13 @@
         .login-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 0.85em; cursor: pointer; }
         .login-btn:hover { transform: translateY(-2px); }
         .error { color: #e74c3c; text-align: center; margin-top: 8px; font-size: 0.75em; }
-        .dashboard-container { min-height: 100vh; max-height: 100vh; background: #f8f9fa; display: none; overflow: hidden; }
+        
+        /* ✅ FIX SCROLL + HAUTEUR AUTO */
+        .dashboard-container { 
+            min-height: 100vh; background: #f8f9fa; 
+            display: none; overflow-y: auto; height: auto; 
+        }
+        
         .navbar { background: white; padding: 8px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
         .nav-left h3 { margin: 0; font-size: 1.1em; }
         .nav-buttons { display: flex; gap: 6px; align-items: center; }
@@ -47,23 +53,58 @@
         .legend-realiser { background: #d4edda; border-left: 3px solid #28a745; color: #155724; }
         .legend-raporter { background: #f8d7da; border-left: 3px solid #dc3545; color: #721c24; }
         .analytics canvas { max-width: 50%; max-height: 200px; margin: 0 auto; }
-        .view-container { max-width: 1400px; margin: 0 auto; padding: 8px; max-height: calc(100vh - 370px); overflow: hidden; }
         .month-view, .week-view { display: none; }
         .month-view.active, .week-view.active { display: block; }
         .month-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         .month-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; height: 260px; }
         .month-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
         .month-header:hover { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); transform: scale(1.02); }
+        .month-header.active { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
         .month-title { font-size: 0.9em; font-weight: bold; }
-        .month-active { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
-        .month-hidden { display: none !important; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; height: calc(100% - 35px); }
         .day-header { background: #f8f9fa; padding: 4px; text-align: center; font-weight: bold; color: #333; font-size: 0.65em; }
-        .day-cell { background: white; padding: 2px; min-height: 40px; position: relative; border: 1px solid #dee2e6; font-size: 0.65em; }
+        .day-cell { background: white; padding: 2px; min-height: 40px; position: relative; border: 1px solid #dee2e6; font-size: 0.65em; cursor: pointer; }
+        .day-cell:hover { background: #f0f0f0; }
         .day-number { font-weight: bold; margin-bottom: 2px; text-align: center; }
-        .week-number { position: absolute; top: 2px; right: 3px; background: #e9ecef; padding: 2px 4px; border-radius: 8px; font-size: 0.55em; color: #495057; }
+        .week-number { position: absolute; top: 2px; right: 3px; background: #e9ecef; padding: 2px 4px; border-radius: 8px; font-size: 0.55em; color: #495057; cursor: pointer; }
+        .week-number:hover { background: #ced4da; }
+        
+        /* Styles for large calendar */
+        .large-month-container { height: auto; max-height: 60vh; width: 100%; overflow-y: auto; }
+        .large-calendar-grid { height: auto; }
+        .large-calendar-grid .day-cell { min-height: 100px; font-size: 0.8em; padding: 5px; }
+        .large-calendar-grid .planning-item { font-size: 0.8em; padding: 8px; }
+        .large-calendar-grid .week-number { font-size: 0.7em; }
+        .large-calendar-grid .day-header { font-size: 0.8em; padding: 6px; }
+        .large-calendar-grid .day-number { font-size: 0.9em; }
+        
+        /* ✅ FIX SCROLL + HAUTEUR AUTO */
+        .month-details { 
+            background: white; margin: 8px auto; max-width: 1400px; 
+            border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); 
+            display: none; overflow: visible; margin-top: 20px; max-height: none; 
+        }
+        .month-details.active { display: block; }
+        .details-header { 
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; 
+            padding: 15px; text-align: center; font-size: 1.5em; font-weight: bold;
+            position: relative;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .details-content { padding: 20px; }
+        .details-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .details-charts canvas { height: 250px; }
+        .close-details { 
+            position: absolute; top: 15px; right: 15px; font-size: 2em; cursor: pointer; 
+            background: rgba(0,0,0,0.2); border-radius: 50%; width: 35px; height: 35px; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .close-details:hover { background: #dc3545; }
+        #fullScreenBtn { background: transparent; border: none; color: white; font-size: 1.2em; cursor: pointer; }
+        #fullScreenBtn:hover { color: #ffd; }
+        
         .week-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 10px; height: 600px; }
-        .week-header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); padding: 15px; text-align: center; color: #212529; }
+        .week-header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); padding: 15px; text-align: center; color: #212529; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
         .week-select-group { display: flex; gap: 8px; align-items: center; }
         .week-select { padding: 8px 12px; border: 2px solid #007bff; border-radius: 5px; font-weight: bold; font-size: 0.9em; }
@@ -71,7 +112,8 @@
         .week-title { font-size: 1.5em; font-weight: bold; }
         .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; height: calc(100% - 100px); }
         .week-day-header { background: #f8f9fa; padding: 12px; text-align: center; font-weight: bold; color: #333; font-size: 1em; }
-        .week-day-cell { background: white; padding: 12px; min-height: 180px; border: 1px solid #dee2e6; font-size: 0.9em; }
+        .week-day-cell { background: white; padding: 12px; min-height: 180px; border: 1px solid #dee2e6; font-size: 0.9em; cursor: pointer; }
+        .week-day-cell:hover { background: #f0f0f0; }
         .week-date { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; text-align: center; color: #495057; }
         .week-plannings { display: flex; flex-direction: column; gap: 8px; }
         .planning-item { padding: 10px; border-radius: 6px; font-size: 0.9em; cursor: pointer; border-left: 4px solid; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
@@ -89,8 +131,36 @@
         .summary-table th, .summary-table td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
         .summary-table th { background: #dee2e6; font-weight: bold; }
         .month-summary { padding: 8px; background: #f8f9fa; margin: 6px; border-radius: 5px; }
+        
+        /* TV Mode Styles */
+        .tv-mode .planning-actions, .tv-mode .add-form, .tv-mode .toggle-form-btn, .tv-mode .export-btn, .tv-mode #showAllBtn, .tv-mode .nav-month, .tv-mode .nav-week {
+            display: none !important;
+        }
+        .tv-mode .month-details, .tv-mode .week-container {
+            font-size: 1.2em;
+        }
+        .tv-mode .large-month-container {
+            max-height: 80vh;
+        }
+        .tv-mode .details-charts canvas {
+            height: 300px;
+        }
+        .tv-mode .navbar {
+            display: none;
+        }
+        
         @media (max-width: 1200px) { .month-row { grid-template-columns: repeat(2, 1fr); } .legend-analytics { grid-template-columns: 1fr; height: auto; } .analytics canvas { max-height: 150px; } }
-        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .week-nav { flex-direction: column; } .week-container { height: 500px; } .week-day-cell { min-height: 150px; } .legend-analytics { height: auto; } .analytics canvas { max-height: 120px; } }
+        @media (max-width: 768px) { 
+            .form-grid { grid-template-columns: 1fr; } 
+            .week-nav { flex-direction: column; } 
+            .week-container { height: 500px; } 
+            .week-day-cell { min-height: 150px; } 
+            .legend-analytics { height: auto; } 
+            .analytics canvas { max-height: 120px; }
+            .details-charts { grid-template-columns: 1fr; } 
+            .month-details { margin: 8px; } 
+            .large-month-container { max-height: 50vh; }
+        }
     </style>
 </head>
 <body>
@@ -128,7 +198,7 @@
             <h3><i class="fas fa-plus"></i> Ajouter Planning</h3>
             <div class="form-grid">
                 <select id="semaine">
-                    <option value="">S??</option>
+                    <option value="">Sélectionner</option>
                     <option value="1">S01</option><option value="2">S02</option><option value="3">S03</option><option value="4">S04</option><option value="5">S05</option>
                     <option value="6">S06</option><option value="7">S07</option><option value="8">S08</option><option value="9">S09</option><option value="10">S10</option><option value="11">S11</option><option value="12">S12</option><option value="13">S13</option>
                     <option value="14">S14</option><option value="15">S15</option><option value="16">S16</option><option value="17">S17</option><option value="18">S18</option><option value="19">S19</option><option value="20">S20</option><option value="21">S21</option><option value="22">S22</option>
@@ -141,8 +211,8 @@
                 <select id="ligne">
                     <option value="">Ligne</option>
                     <option value="F01">F01</option><option value="F02">F02</option>
-                  <option value="F83">F83</option><option
-                                                          <option value="F06">F06</option><option value="F15">F15</option>
+                    <option value="F83">F83</option>
+                    <option value="F06">F06</option><option value="F15">F15</option>
                     <option value="F27">F27</option><option value="F31">F31</option><option value="F73">F73</option><option value="F85">F85</option>
                     <option value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
                     <option value="L76">L76</option><option value="L77">L77</option><option value="L84">L84</option>
@@ -187,6 +257,22 @@
                 <button id="nextMonths" class="nav-btn" style="background:#007bff; color:white;">Suivant <i class="fas fa-chevron-right"></i></button>
             </div>
             <div id="calendarContainer"></div>
+            
+            <div id="monthDetails" class="month-details">
+                <div class="details-header">
+                    <span class="close-details" onclick="window.closeMonthDetails()">&times;</span>
+                    <button id="fullScreenBtn" onclick="window.toggleFullScreen()"><i class="fas fa-expand"></i> Plein Écran pour TV</button>
+                    <i class="fas fa-calendar"></i> Grand Calendrier du Mois
+                </div>
+                <div class="details-content">
+                    <div id="detailsMonthTitle"></div>
+                    <div id="largeCalendarContainer"></div>
+                    <div id="detailsCharts" class="details-charts">
+                        <canvas id="detailsHoursChart"></canvas>
+                        <canvas id="detailsStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
         <div id="weekView" class="week-view">
             <div id="weekContainer"></div>
@@ -198,21 +284,18 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getDatabase, ref, push, onValue, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        // Register Chart.js data labels plugin
         Chart.register(ChartDataLabels);
 
-        // REPLACE WITH YOUR VALID FIREBASE CONFIG FROM FIREBASE CONSOLE
-       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
-  authDomain: "tvdash-9e6b3.firebaseapp.com",
-  databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
-  projectId: "tvdash-9e6b3",
-  storageBucket: "tvdash-9e6b3.firebasestorage.app",
-  messagingSenderId: "307274554235",
-  appId: "1:307274554235:web:862dc484ee93254383fbde",
-  measurementId: "G-0DJ7V5HPWD"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
+            authDomain: "tvdash-9e6b3.firebaseapp.com",
+            databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
+            projectId: "tvdash-9e6b3",
+            storageBucket: "tvdash-9e6b3.firebasestorage.app",
+            messagingSenderId: "307274554235",
+            appId: "1:307274554235:web:862dc484ee93254383fbde",
+            measurementId: "G-0DJ7V5HPWD"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -224,14 +307,28 @@ const firebaseConfig = {
         let currentWeek = 1;
         let currentMonth = 0;
         let editId = null;
-        let currentMonthSet = 0; // 0 for Jan-Jun, 1 for Jul-Dec
+        let currentMonthSet = 0;
+        let selectedMonthIndex = -1;
         const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        
         let metricsChart = null;
         let realisationChart = null;
+        let detailsHoursChart = null;
+        let detailsStatusChart = null;
 
         window.showWeek = function(weekNum) { showWeek(weekNum); };
         window.editPlanning = function(id) { editPlanning(id); };
         window.deletePlanning = function(id) { deletePlanning(id); };
+        window.closeMonthDetails = function() { closeMonthDetails(); };
+        window.openAddFormForWeek = function(week) { openAddFormForWeek(week); };
+        window.toggleFullScreen = toggleFullScreen;
+        window.toggleWeekFullScreen = toggleWeekFullScreen;
+
+        // Set current date-based defaults
+        const now = new Date();
+        currentMonth = now.getMonth();
+        currentMonthSet = Math.floor(currentMonth / 6);
+        currentWeek = getWeekNumber(now);
 
         // LOGIN
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -239,7 +336,6 @@ const firebaseConfig = {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorEl = document.getElementById('loginError');
-            
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 errorEl.textContent = '';
@@ -262,6 +358,15 @@ const firebaseConfig = {
             } else {
                 document.getElementById('loginPage').style.display = 'flex';
                 document.getElementById('dashboard').style.display = 'none';
+            }
+        });
+
+        // Fullscreen change for TV mode
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                document.body.classList.add('tv-mode');
+            } else {
+                document.body.classList.remove('tv-mode');
             }
         });
 
@@ -296,31 +401,24 @@ const firebaseConfig = {
             document.getElementById('weekView').classList.remove('active');
             document.getElementById('monthViewBtn').classList.add('active');
             document.getElementById('weekViewBtn').classList.remove('active');
-            currentMonth = currentFilter;
             initCalendar();
             updateAnalytics('month');
+            closeMonthDetails();
         });
 
         document.getElementById('weekViewBtn').addEventListener('click', () => {
-            try {
-                document.getElementById('monthView').classList.remove('active');
-                document.getElementById('weekView').classList.add('active');
-                document.getElementById('monthViewBtn').classList.remove('active');
-                document.getElementById('weekViewBtn').classList.add('active');
-                showWeek(currentWeek);
-                updateAnalytics('week');
-            } catch (error) {
-                console.error('Error switching to week view:', error);
-                alert('❌ Erreur lors du passage à la vue hebdomadaire : ' + error.message);
-            }
+            document.getElementById('monthView').classList.remove('active');
+            document.getElementById('weekView').classList.add('active');
+            document.getElementById('monthViewBtn').classList.remove('active');
+            document.getElementById('weekViewBtn').classList.add('active');
+            showWeek(currentWeek);
+            updateAnalytics('week');
         });
 
         document.getElementById('showAllBtn').addEventListener('click', () => {
             currentFilter = 'all';
-            document.querySelectorAll('.month-header').forEach(h => {
-                h.classList.remove('month-active');
-                h.parentElement.classList.remove('month-hidden');
-            });
+            document.querySelectorAll('.month-header').forEach(h => h.classList.remove('active'));
+            closeMonthDetails();
             updateAnalytics('month');
         });
 
@@ -385,6 +483,7 @@ const firebaseConfig = {
                 if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
                     showWeek(semaine);
                 }
+                if (selectedMonthIndex === data.month) showMonthDetails(data.month);
                 updateAnalytics(document.getElementById('weekView').classList.contains('active') ? 'week' : 'month');
             } catch (error) {
                 alert('❌ Erreur: ' + error.message);
@@ -399,7 +498,7 @@ const firebaseConfig = {
                 const data = snapshot.val();
                 if (data) {
                     Object.entries(data).forEach(([id, item]) => {
-                        item.id = id; // Store Firebase key
+                        item.id = id;
                         const key = `${item.month}_${item.semaine}`;
                         if (!planningData[key]) planningData[key] = [];
                         planningData[key].push(item);
@@ -451,6 +550,7 @@ const firebaseConfig = {
                     if (document.getElementById('weekView').classList.contains('active')) {
                         showWeek(currentWeek);
                     }
+                    if (selectedMonthIndex >= 0) showMonthDetails(selectedMonthIndex);
                     updateAnalytics(document.getElementById('weekView').classList.contains('active') ? 'week' : 'month');
                 } catch (error) {
                     alert('❌ Erreur: ' + error.message);
@@ -458,237 +558,145 @@ const firebaseConfig = {
             }
         }
 
-        // ANALYTIQUES
-        function updateAnalytics(viewType) {
-            let data = [];
-            if (viewType === 'week') {
-                data = getWeekPlannings(currentWeek);
+        // FULL SCREEN FOR TV
+        function toggleFullScreen() {
+            const elem = document.getElementById('monthDetails');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {
+                    alert(`Erreur en passant en plein écran: ${err.message}`);
+                });
             } else {
-                data = getMonthSummary(currentMonth);
+                document.exitFullscreen();
             }
+        }
 
-            const totalHeures = data.reduce((sum, item) => sum + item.heures, 0);
-            const totalTechniciens = data.reduce((sum, item) => sum + item.effectif, 0);
-            const realiserHeures = data.filter(item => item.statut === 'realiser').reduce((sum, item) => sum + item.heures, 0);
-            const pourcentageReal = totalHeures > 0 ? ((realiserHeures / totalHeures) * 100).toFixed(1) : 0;
+        function toggleWeekFullScreen() {
+            const elem = document.getElementById('weekContainer');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {
+                    alert(`Erreur en passant en plein écran: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
 
-            // Bar Chart for Total Heures and Nombre Techniciens
-            if (metricsChart) metricsChart.destroy();
-            metricsChart = new Chart(document.getElementById('metricsChart'), {
+        // Interactive add for week
+        function openAddFormForWeek(week) {
+            const form = document.getElementById('addForm');
+            form.classList.add('visible');
+            document.getElementById('toggleFormBtn').innerHTML = '<i class="fas fa-minus"></i> Masquer Ajouter Planning';
+            document.getElementById('semaine').value = week;
+        }
+
+        // SHOW MONTH DETAILS AS LARGE CALENDAR
+        function showMonthDetails(monthIndex) {
+            selectedMonthIndex = monthIndex;
+            const monthPlannings = getMonthSummary(monthIndex);
+            document.getElementById('detailsMonthTitle').innerHTML = 
+                `<h3><i class="fas fa-calendar"></i> Grand Calendrier - ${monthNames[monthIndex]} 2025</h3>
+                 <p><strong>${monthPlannings.length} plannings trouvés</strong></p>`;
+            
+            // Add large calendar
+            document.getElementById('largeCalendarContainer').innerHTML = createMonthCalendar(2025, monthIndex, monthNames[monthIndex], monthIndex, true);
+            
+            createDetailsCharts(monthPlannings);
+            document.getElementById('monthDetails').classList.add('active');
+            
+            // Activer le bon mois
+            document.querySelectorAll('.month-header').forEach(h => h.classList.remove('active'));
+            const activeHeader = document.querySelector(`.month-header[data-month="${monthIndex}"]`);
+            if (activeHeader) activeHeader.classList.add('active');
+        }
+
+        function closeMonthDetails() {
+            document.getElementById('monthDetails').classList.remove('active');
+            selectedMonthIndex = -1;
+            document.querySelectorAll('.month-header').forEach(h => h.classList.remove('active'));
+        }
+
+        function createDetailsCharts(plannings) {
+            if (detailsHoursChart) detailsHoursChart.destroy();
+            if (detailsStatusChart) detailsStatusChart.destroy();
+            
+            const hoursByStatus = {
+                planifier: plannings.filter(p => p.statut === 'planifier').reduce((sum, p) => sum + p.heures, 0),
+                realiser: plannings.filter(p => p.statut === 'realiser').reduce((sum, p) => sum + p.heures, 0),
+                raporter: plannings.filter(p => p.statut === 'raporter').reduce((sum, p) => sum + p.heures, 0)
+            };
+
+            const byStatus = {
+                planifier: plannings.filter(p => p.statut === 'planifier').length,
+                realiser: plannings.filter(p => p.statut === 'realiser').length,
+                raporter: plannings.filter(p => p.statut === 'raporter').length
+            };
+
+            detailsHoursChart = new Chart(document.getElementById('detailsHoursChart'), {
                 type: 'bar',
                 data: {
-                    labels: ['Total Heures', 'Nombre Techniciens'],
+                    labels: ['Planifier', 'Réaliser', 'Rapporter'],
                     datasets: [{
-                        label: viewType === 'week' ? 'Semaine ' + currentWeek : monthNames[currentMonth],
-                        data: [totalHeures, totalTechniciens],
-                        backgroundColor: ['#28a745', '#007bff'],
-                        borderColor: ['#1e7e34', '#005cbf'],
-                        borderWidth: 1
+                        label: 'Heures',
+                        data: [hoursByStatus.planifier, hoursByStatus.realiser, hoursByStatus.raporter],
+                        backgroundColor: ['#6c757d', '#28a745', '#dc3545']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Métriques', font: { size: 14 } },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            font: { size: 14, weight: 'bold' },
-                            color: '#333',
-                            formatter: (value) => value
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, title: { display: true, text: 'Valeur', font: { size: 12 } } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Doughnut Chart for % Réalisation
-            if (realisationChart) realisationChart.destroy();
-            realisationChart = new Chart(document.getElementById('realisationChart'), {
+            detailsStatusChart = new Chart(document.getElementById('detailsStatusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Réalisé', 'Non Réalisé'],
+                    labels: ['Planifier', 'Réaliser', 'Rapporter'],
                     datasets: [{
-                        data: [realiserHeures, totalHeures - realiserHeures],
-                        backgroundColor: ['#28a745', '#dc3545'],
-                        borderColor: ['#1e7e34', '#b02a37'],
-                        borderWidth: 1
+                        data: [byStatus.planifier, byStatus.realiser, byStatus.raporter],
+                        backgroundColor: ['#6c757d', '#28a745', '#dc3545']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { size: 12 } } },
-                        title: { display: true, text: '% Réalisation (' + pourcentageReal + '%)', font: { size: 14 } },
-                        datalabels: {
-                            font: { size: 14, weight: 'bold' },
-                            color: '#fff',
-                            formatter: (value, context) => {
-                                const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
-                                return total > 0 ? Math.round((value / total) * 100) + '%' : '0%';
-                            }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        // VUE HEBDOMADAIRE
-        function showWeek(weekNum) {
-            try {
-                currentWeek = weekNum;
-                const container = document.getElementById('weekContainer');
-                if (!container) throw new Error('weekContainer not found');
-                const weekStart = getWeekStartDate(2025, weekNum);
-                const weekDays = [];
-                for (let i = 0; i < 7; i++) {
-                    const date = new Date(weekStart);
-                    date.setDate(weekStart.getDate() + i);
-                    weekDays.push(date);
-                }
-
-                let html = `
-                    <div class="week-container">
-                        <div class="week-header">
-                            <div class="week-nav">
-                                <button class="week-nav-btn" onclick="window.showWeek(${Math.max(1, weekNum-1)})"><i class="fas fa-chevron-left"></i></button>
-                                <div class="week-select-group">
-                                    <label>Semaine:</label>
-                                    <select class="week-select" onchange="window.showWeek(parseInt(this.value))">
-                                        ${Array.from({length: 52}, (_, i) => `<option value="${i+1}" ${i+1 === weekNum ? 'selected' : ''}>S${(i+1).toString().padStart(2, '0')}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="week-title">Semaine ${weekNum.toString().padStart(2, '0')} 2025</div>
-                                <button class="week-nav-btn" onclick="window.showWeek(${Math.min(52, weekNum+1)})"><i class="fas fa-chevron-right"></i></button>
-                            </div>
-                        </div>
-                        <div class="week-grid">
-                `;
-
-                ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].forEach(day => {
-                    html += `<div class="week-day-header">${day}</div>`;
-                });
-
-                weekDays.forEach(date => {
-                    const dayPlannings = getWeekPlannings(weekNum);
-                    let planningHtml = '';
-                    dayPlannings.forEach(item => {
-                        const dateStr = item.statut === 'realiser' && item.dateRealisation 
-                            ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
-                            : item.statut === 'raporter' && item.dateRapporter 
-                            ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
-                            : '';
-                        planningHtml += `
-                            <div class="planning-item ${item.statut}">
-                                <div class="planning-left">
-                                    <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
-                                    <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
-                                    ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
-                                </div>
-                                <div class="planning-actions">
-                                    <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
-                                    <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    html += `
-                        <div class="week-day-cell">
-                            <div class="week-date">${date.getDate()}/${date.getMonth()+1}</div>
-                            <div class="week-plannings">${planningHtml || '<div style="color:#6c757d; font-style:italic;">Aucun planning</div>'}</div>
-                        </div>
-                    `;
-                });
-
-                html += `</div>${createWeekSummary(weekNum)}</div>`;
-                container.innerHTML = html;
-                updateAnalytics('week');
-            } catch (error) {
-                console.error('Error in showWeek:', error);
-                alert('❌ Erreur dans la vue hebdomadaire : ' + error.message);
-            }
-        }
-
-        function getWeekPlannings(weekNum) {
-            return Object.values(planningData).flat().filter(item => item.semaine === weekNum);
-        }
-
-        function createWeekSummary(weekNum) {
-            const weekPlannings = getWeekPlannings(weekNum);
-            return `
-                <div class="month-summary">
-                    <h4>Résumé Semaine ${weekNum.toString().padStart(2, '0')}</h4>
-                    <table class="summary-table">
-                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th><th>Date</th></tr></thead>
-                        <tbody>
-                            ${weekPlannings.map(item => `
-                                <tr class="${item.statut}">
-                                    <td>S${item.semaine.toString().padStart(2, '0')}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
-                                    <td>${item.effectif}</td><td>${item.ligne}</td>
-                                    <td>${getEmoji(item.statut)}</td>
-                                    <td>${item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-'}</td>
-                                </tr>
-                            `).join('')}
-                            ${weekPlannings.length === 0 ? '<tr><td colspan="7" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        // VUE MENSUELLE
+        // ✅ FIX CLIC MOIS - initCalendar()
         function initCalendar() {
-            try {
-                const container = document.getElementById('calendarContainer');
-                if (!container) throw new Error('calendarContainer not found');
-                let html = '';
-                const startMonth = currentMonthSet * 6;
-                for (let row = 0; row < 2; row++) {
-                    html += '<div class="month-row">';
-                    for (let i = 0; i < 3; i++) {
-                        const monthIndex = startMonth + row * 3 + i;
-                        if (monthIndex < 12) {
-                            html += createMonthCalendar(2025, monthIndex, monthNames[monthIndex]);
-                        }
+            const container = document.getElementById('calendarContainer');
+            let html = '';
+            const startMonth = currentMonthSet * 6;
+            
+            for (let row = 0; row < 2; row++) {
+                html += '<div class="month-row">';
+                for (let i = 0; i < 3; i++) {
+                    const monthIdx = startMonth + row * 3 + i;
+                    if (monthIdx < 12) {
+                        html += createMonthCalendar(2025, monthIdx, monthNames[monthIdx], monthIdx);
                     }
-                    html += '</div>';
                 }
-                container.innerHTML = html;
-
-                document.querySelectorAll('.month-header').forEach((header, index) => {
-                    header.addEventListener('click', () => {
-                        currentFilter = startMonth + index;
-                        document.querySelectorAll('.month-header').forEach(h => h.classList.remove('month-active'));
-                        document.querySelectorAll('.month-container').forEach((c, idx) => {
-                            if (idx === index) {
-                                c.classList.remove('month-hidden');
-                                header.classList.add('month-active');
-                            } else {
-                                c.classList.add('month-hidden');
-                            }
-                        });
-                        currentMonth = startMonth + index;
-                        updateAnalytics('month');
-                    });
-                });
-                updateAnalytics('month');
-            } catch (error) {
-                console.error('Error in initCalendar:', error);
-                alert('❌ Erreur dans la vue mensuelle : ' + error.message);
+                html += '</div>';
             }
+            container.innerHTML = html;
+
+            // ✅ CLIC SUR CHAQUE MOIS - CORRIGÉ !
+            document.querySelectorAll('.month-header').forEach((header, index) => {
+                const realMonthIndex = startMonth + index;
+                if (realMonthIndex < 12) {
+                    header.addEventListener('click', () => {
+                        console.log('✅ CLIC MOIS:', monthNames[realMonthIndex]);
+                        showMonthDetails(realMonthIndex);
+                    });
+                }
+            });
+            updateAnalytics('month');
         }
 
-        function createMonthCalendar(year, month, monthName) {
+        // ✅ FIX CLIC MOIS - createMonthCalendar() with large option
+        function createMonthCalendar(year, month, monthName, monthIndex, isLarge = false) {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay() || 7; // Adjust for Sunday=0 to Monday=1
+            const firstDay = new Date(year, month, 1).getDay() || 7;
             
-            let gridHtml = '<div class="calendar-grid">';
+            const containerClass = isLarge ? 'large-month-container' : 'month-container';
+            const gridClass = isLarge ? 'large-calendar-grid calendar-grid' : 'calendar-grid';
+            
+            let gridHtml = `<div class="${gridClass}">`;
             ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
                 gridHtml += `<div class="day-header">${day}</div>`;
             });
@@ -724,8 +732,8 @@ const firebaseConfig = {
                 });
                 
                 gridHtml += `
-                    <div class="day-cell">
-                        <div class="week-number">S${weekNum.toString().padStart(2, '0')}</div>
+                    <div class="day-cell" onclick="window.openAddFormForWeek(${weekNum})">
+                        <div class="week-number" onclick="event.stopPropagation(); window.openAddFormForWeek(${weekNum})">S${weekNum.toString().padStart(2, '0')}</div>
                         <div class="day-number">${day}</div>
                         ${planningHtml}
                     </div>
@@ -740,9 +748,188 @@ const firebaseConfig = {
             gridHtml += '</div>';
             
             return `
-                <div class="month-container">
-                    <div class="month-header"><h3 class="month-title">${monthName} 2025</h3></div>
+                <div class="${containerClass}">
+                    <div class="month-header" data-month="${monthIndex}">
+                        <h3 class="month-title">${monthName} 2025</h3>
+                    </div>
                     ${gridHtml}
+                </div>
+            `;
+        }
+
+        // ANALYTIQUES
+        function updateAnalytics(viewType) {
+            let data = [];
+            if (viewType === 'week') {
+                data = getWeekPlannings(currentWeek);
+            } else {
+                data = selectedMonthIndex >= 0 ? getMonthSummary(selectedMonthIndex) : getMonthSummary(currentMonth);
+            }
+
+            const totalHeures = data.reduce((sum, item) => sum + item.heures, 0);
+            const totalTechniciens = data.reduce((sum, item) => sum + item.effectif, 0);
+            const realiserHeures = data.filter(item => item.statut === 'realiser').reduce((sum, item) => sum + item.heures, 0);
+            const pourcentageReal = totalHeures > 0 ? ((realiserHeures / totalHeures) * 100).toFixed(1) : 0;
+
+            if (metricsChart) metricsChart.destroy();
+            metricsChart = new Chart(document.getElementById('metricsChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Total Heures', 'Nombre Techniciens'],
+                    datasets: [{
+                        label: viewType === 'week' ? 'Semaine ' + currentWeek : selectedMonthIndex >= 0 ? monthNames[selectedMonthIndex] : monthNames[currentMonth],
+                        data: [totalHeures, totalTechniciens],
+                        backgroundColor: ['#28a745', '#007bff'],
+                        borderColor: ['#1e7e34', '#005cbf'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Métriques', font: { size: 14 } },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            font: { size: 14, weight: 'bold' },
+                            color: '#333',
+                            formatter: (value) => value
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Valeur', font: { size: 12 } } }
+                    }
+                }
+            });
+
+            if (realisationChart) realisationChart.destroy();
+            realisationChart = new Chart(document.getElementById('realisationChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Réalisé', 'Non Réalisé'],
+                    datasets: [{
+                        data: [realiserHeures, totalHeures - realiserHeures],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderColor: ['#1e7e34', '#b02a37'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 12 } } },
+                        title: { display: true, text: '% Réalisation (' + pourcentageReal + '%)', font: { size: 14 } },
+                        datalabels: {
+                            font: { size: 14, weight: 'bold' },
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                                return total > 0 ? Math.round((value / total) * 100) + '%' : '0%';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // VUE HEBDOMADAIRE
+        function showWeek(weekNum) {
+            currentWeek = weekNum;
+            const container = document.getElementById('weekContainer');
+            const weekStart = getWeekStartDate(2025, weekNum);
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(weekStart);
+                date.setDate(weekStart.getDate() + i);
+                weekDays.push(date);
+            }
+
+            let html = `
+                <div class="week-container">
+                    <div class="week-header">
+                        <div class="week-nav">
+                            <button class="week-nav-btn" onclick="window.showWeek(${Math.max(1, weekNum-1)})"><i class="fas fa-chevron-left"></i></button>
+                            <div class="week-select-group">
+                                <label>Semaine:</label>
+                                <select class="week-select" onchange="window.showWeek(parseInt(this.value))">
+                                    ${Array.from({length: 52}, (_, i) => `<option value="${i+1}" ${i+1 === weekNum ? 'selected' : ''}>S${(i+1).toString().padStart(2, '0')}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="week-title">Semaine ${weekNum.toString().padStart(2, '0')} 2025</div>
+                            <button class="week-nav-btn" onclick="window.showWeek(${Math.min(52, weekNum+1)})"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <button onclick="window.toggleWeekFullScreen()"><i class="fas fa-expand"></i> Plein Écran pour TV</button>
+                    </div>
+                    <div class="week-grid">
+            `;
+
+            ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].forEach(day => {
+                html += `<div class="week-day-header">${day}</div>`;
+            });
+
+            weekDays.forEach(date => {
+                const dayPlannings = getWeekPlannings(weekNum);
+                let planningHtml = '';
+                dayPlannings.forEach(item => {
+                    const dateStr = item.statut === 'realiser' && item.dateRealisation 
+                        ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
+                        : item.statut === 'raporter' && item.dateRapporter 
+                        ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
+                        : '';
+                    planningHtml += `
+                        <div class="planning-item ${item.statut}">
+                            <div class="planning-left">
+                                <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
+                                <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
+                                ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
+                            </div>
+                            <div class="planning-actions">
+                                <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="week-day-cell" onclick="window.openAddFormForWeek(${weekNum})">
+                        <div class="week-date">${date.getDate()}/${date.getMonth()+1}</div>
+                        <div class="week-plannings">${planningHtml || '<div style="color:#6c757d; font-style:italic;">Aucun planning</div>'}</div>
+                    </div>
+                `;
+            });
+
+            html += `</div>${createWeekSummary(weekNum)}</div>`;
+            container.innerHTML = html;
+            updateAnalytics('week');
+        }
+
+        function getWeekPlannings(weekNum) {
+            return Object.values(planningData).flat().filter(item => item.semaine === weekNum);
+        }
+
+        function createWeekSummary(weekNum) {
+            const weekPlannings = getWeekPlannings(weekNum);
+            return `
+                <div class="month-summary">
+                    <h4>Résumé Semaine ${weekNum.toString().padStart(2, '0')}</h4>
+                    <table class="summary-table">
+                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th><th>Date</th></tr></thead>
+                        <tbody>
+                            ${weekPlannings.map(item => `
+                                <tr class="${item.statut}">
+                                    <td>S${item.semaine.toString().padStart(2, '0')}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
+                                    <td>${item.effectif}</td><td>${item.ligne}</td>
+                                    <td>${getEmoji(item.statut)}</td>
+                                    <td>${item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-'}</td>
+                                </tr>
+                            `).join('')}
+                            ${weekPlannings.length === 0 ? '<tr><td colspan="7" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
+                        </tbody>
+                    </table>
                 </div>
             `;
         }
