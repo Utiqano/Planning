@@ -9,80 +9,85 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .login-card h2 { text-align: center; margin-bottom: 30px; color: #333; }
-        .input-group { position: relative; margin-bottom: 20px; }
-        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #667eea; }
-        .input-group input { width: 100%; padding: 15px 15px 15px 45px; border: 2px solid #e1e5e9; border-radius: 10px; font-size: 16px; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        .login-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        .login-card h2 { text-align: center; margin-bottom: 15px; color: #333; font-size: 1.4em; }
+        .input-group { position: relative; margin-bottom: 12px; }
+        .input-group i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #667eea; }
+        .input-group input { width: 100%; padding: 10px 10px 10px 35px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 0.85em; }
         .input-group input:focus { outline: none; border-color: #667eea; }
-        .login-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+        .login-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 0.85em; cursor: pointer; }
         .login-btn:hover { transform: translateY(-2px); }
-        .error { color: #e74c3c; text-align: center; margin-top: 10px; }
-        .dashboard-container { min-height: 100vh; background: #f8f9fa; display: none; }
-        .navbar { background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .nav-left h3 { margin: 0; }
-        .nav-buttons { display: flex; gap: 10px; align-items: center; }
-        .nav-btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .error { color: #e74c3c; text-align: center; margin-top: 8px; font-size: 0.75em; }
+        .dashboard-container { min-height: 100vh; max-height: 100vh; background: #f8f9fa; display: none; overflow: hidden; }
+        .navbar { background: white; padding: 8px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .nav-left h3 { margin: 0; font-size: 1.1em; }
+        .nav-buttons { display: flex; gap: 6px; align-items: center; }
+        .nav-btn { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; transition: all 0.3s; }
         .nav-btn:hover { transform: translateY(-2px); }
         .nav-btn.active { background: #28a745; color: white; }
         .nav-month { background: #007bff; color: white; }
         .nav-week { background: #ffc107; color: #212529; }
         .export-btn { background: #17a2b8; color: white; }
         .logout-btn { background: #e74c3c; color: white; }
-        .add-form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 20px auto; max-width: 1400px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; }
-        .form-grid input, .form-grid select { padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px; }
-        .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .toggle-form-btn { background: #6c757d; color: white; padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; margin: 8px auto; display: block; }
+        .add-form { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); margin: 8px auto; max-width: 1400px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .add-form.visible { max-height: 150px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-top: 8px; }
+        .form-grid input, .form-grid select { padding: 6px; border: 2px solid #e1e5e9; border-radius: 5px; font-size: 0.75em; }
+        .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 6px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; }
         .add-btn:hover { transform: translateY(-2px); }
-        .legend-analytics { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); margin: 20px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .legend-analytics { background: white; padding: 8px; border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 8px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75em; }
         .legend, .analytics { text-align: center; }
-        .legend-item, .analytic-item { display: inline-block; margin: 0 10px; padding: 8px 12px; border-radius: 5px; font-weight: bold; }
-        .legend-planifier { background: #f8f9fa; border-left: 4px solid #6c757d; color: #6c757d; }
-        .legend-realiser { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
-        .legend-raporter { background: #f8d7da; border-left: 4px solid #dc3545; color: #721c24; }
-        .analytic-item { background: #e9ecef; border-radius: 8px; margin: 5px 0; padding: 10px; }
-        .analytic-value { font-size: 20px; font-weight: bold; color: #28a745; }
-        .view-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .legend-item, .analytic-item { display: inline-block; margin: 0 6px; padding: 5px 8px; border-radius: 5px; font-weight: bold; }
+        .legend-planifier { background: #f8f9fa; border-left: 3px solid #6c757d; color: #6c757d; }
+        .legend-realiser { background: #d4edda; border-left: 3px solid #28a745; color: #155724; }
+        .legend-raporter { background: #f8d7da; border-left: 3px solid #dc3545; color: #721c24; }
+        .analytic-item { background: #e9ecef; border-radius: 5px; margin: 4px 0; padding: 6px; }
+        .analytic-value { font-size: 0.9em; font-weight: bold; color: #28a745; }
+        .view-container { max-width: 1400px; margin: 0 auto; padding: 8px; max-height: calc(100vh - 120px); overflow: hidden; }
         .month-view, .week-view { display: none; }
         .month-view.active, .week-view.active { display: block; }
-        .month-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .month-container { background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow: hidden; }
-        .month-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .month-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .month-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; height: 280px; }
+        .month-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
         .month-header:hover { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); transform: scale(1.02); }
-        .month-title { font-size: 18px; font-weight: bold; }
+        .month-title { font-size: 0.9em; font-weight: bold; }
         .month-active { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
         .month-hidden { display: none !important; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; }
-        .day-header { background: #f8f9fa; padding: 10px; text-align: center; font-weight: bold; color: #333; }
-        .day-cell { background: white; padding: 5px; min-height: 90px; position: relative; border: 1px solid #dee2e6; }
-        .day-number { font-weight: bold; margin-bottom: 3px; text-align: center; }
-        .week-number { position: absolute; top: 2px; right: 3px; background: #e9ecef; padding: 2px 5px; border-radius: 10px; font-size: 9px; color: #495057; }
-        .week-container { background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 20px; }
-        .week-header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); padding: 20px; text-align: center; color: #212529; }
-        .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-        .week-select-group { display: flex; gap: 10px; align-items: center; }
-        .week-select { padding: 8px 12px; border: 2px solid #007bff; border-radius: 5px; font-weight: bold; }
-        .week-nav-btn { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
-        .week-title { font-size: 24px; font-weight: bold; }
-        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; }
-        .week-day-header { background: #f8f9fa; padding: 15px; text-align: center; font-weight: bold; color: #333; }
-        .week-day-cell { background: white; padding: 15px; min-height: 180px; border: 1px solid #dee2e6; }
-        .week-date { font-weight: bold; font-size: 16px; margin-bottom: 10px; text-align: center; color: #495057; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; height: calc(100% - 35px); }
+        .day-header { background: #f8f9fa; padding: 4px; text-align: center; font-weight: bold; color: #333; font-size: 0.65em; }
+        .day-cell { background: white; padding: 2px; min-height: 45px; position: relative; border: 1px solid #dee2e6; font-size: 0.65em; }
+        .day-number { font-weight: bold; margin-bottom: 2px; text-align: center; }
+        .week-number { position: absolute; top: 2px; right: 3px; background: #e9ecef; padding: 2px 4px; border-radius: 8px; font-size: 0.55em; color: #495057; }
+        .week-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 10px; height: 650px; }
+        .week-header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); padding: 15px; text-align: center; color: #212529; }
+        .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .week-select-group { display: flex; gap: 8px; align-items: center; }
+        .week-select { padding: 8px 12px; border: 2px solid #007bff; border-radius: 5px; font-weight: bold; font-size: 0.9em; }
+        .week-nav-btn { background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 0.9em; }
+        .week-title { font-size: 1.5em; font-weight: bold; }
+        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; height: calc(100% - 100px); }
+        .week-day-header { background: #f8f9fa; padding: 12px; text-align: center; font-weight: bold; color: #333; font-size: 1em; }
+        .week-day-cell { background: white; padding: 12px; min-height: 200px; border: 1px solid #dee2e6; font-size: 0.9em; }
+        .week-date { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; text-align: center; color: #495057; }
         .week-plannings { display: flex; flex-direction: column; gap: 8px; }
-        .planning-item { padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; border-left: 5px solid; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .planning-item { padding: 10px; border-radius: 6px; font-size: 0.9em; cursor: pointer; border-left: 4px solid; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
         .planning-item.planifier { background: #f8f9fa; color: #6c757d; border-left-color: #6c757d; }
         .planning-item.realiser { background: #d4edda; color: #155724; border-left-color: #28a745; }
         .planning-item.raporter { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
-        .planning-left { display: flex; flex-direction: column; }
-        .planning-line { font-weight: bold; font-size: 14px; }
-        .planning-details { font-size: 11px; opacity: 0.8; }
-        .summary-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 15px; }
+        .planning-left { display: flex; flex-direction: column; flex: 1; }
+        .planning-line { font-weight: bold; font-size: 1em; }
+        .planning-details { font-size: 0.8em; opacity: 0.8; }
+        .planning-actions { display: flex; gap: 6px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 0.9em; color: #333; }
+        .action-btn:hover { color: #007bff; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 0.8em; margin-top: 12px; }
         .summary-table th, .summary-table td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
         .summary-table th { background: #dee2e6; font-weight: bold; }
-        .month-summary { padding: 15px; background: #f8f9fa; margin: 10px; border-radius: 8px; }
+        .month-summary { padding: 8px; background: #f8f9fa; margin: 6px; border-radius: 5px; }
         @media (max-width: 1200px) { .month-row { grid-template-columns: repeat(2, 1fr); } .legend-analytics { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .week-nav { flex-direction: column; } }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .week-nav { flex-direction: column; } .week-container { height: 500px; } .week-day-cell { min-height: 150px; } }
     </style>
 </head>
 <body>
@@ -115,82 +120,89 @@
                 <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
             </div>
         </nav>
+        <button id="toggleFormBtn" class="toggle-form-btn"><i class="fas fa-plus"></i> Afficher Ajouter Planning</button>
+        <div class="add-form" id="addForm">
+            <h3><i class="fas fa-plus"></i> Ajouter Planning</h3>
+            <div class="form-grid">
+                <select id="semaine">
+                    <option value="">S??</option>
+                    <option value="1">S01</option><option value="2">S02</option><option value="3">S03</option><option value="4">S04</option><option value="5">S05</option>
+                    <option value="6">S06</option><option value="7">S07</option><option value="8">S08</option><option value="9">S09</option><option value="10">S10</option><option value="11">S11</option><option value="12">S12</option><option value="13">S13</option>
+                    <option value="14">S14</option><option value="15">S15</option><option value="16">S16</option><option value="17">S17</option><option value="18">S18</option><option value="19">S19</option><option value="20">S20</option><option value="21">S21</option><option value="22">S22</option>
+                    <option value="23">S23</option><option value="24">S24</option><option value="25">S25</option><option value="26">S26</option><option value="27">S27</option><option value="28">S28</option><option value="29">S29</option><option value="30">S30</option><option value="31">S31</option><option value="32">S32</option><option value="33">S33</option>
+                    <option value="34">S34</option><option value="35">S35</option><option value="36">S36</option><option value="37">S37</option><option value="38">S38</option><option value="39">S39</option><option value="40">S40</option><option value="41">S41</option><option value="42">S42</option><option value="43">S43</option>
+                    <option value="44">S44</option><option value="45">S45</option><option value="46">S46</option><option value="47">S47</option><option value="48">S48</option><option value="49">S49</option><option value="50">S50</option><option value="51">S51</option><option value="52">S52</option>
+                </select>
+                <input type="number" id="heures" placeholder="Heures" min="0">
+                <input type="number" id="effectif" placeholder="Effectif" min="0">
+                <select id="ligne">
+                    <option value="">Ligne</option>
+                    <option value="F01">F01</option><option value="F02">F02</option><option value="F06">F06</option><option value="F15">F15</option>
+                    <option value="F27">F27</option><option value="F31">F31</option><option value="F73">F73</option><option value="F85">F85</option>
+                    <option value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
+                    <option value="L76">L76</option><option value="L77">L77</option><option value="L84">L84</option>
+                    <option value="L101">L101</option><option value="L108">L108</option>
+                    <option value="A12">A12</option>
+                    <option value="Boy2">Boy 2</option><option value="Boy3">Boy 3</option>
+                    <option value="420T">420 T</option><option value="450T">450 T</option><option value="400T">400 T</option>
+                    <option value="520T">520 T</option><option value="550T">550 T</option>
+                    <option value="125T">125 T</option><option value="120T">120 T</option>
+                    <option value="80T">80 T</option><option value="50T">50 T</option>
+                </select>
+                <select id="statut">
+                    <option value="">Statut</option>
+                    <option value="planifier">📋 Planifier</option>
+                    <option value="realiser">✅ Réaliser</option>
+                    <option value="raporter">🔴 Rapporter</option>
+                </select>
+                <button id="addBtn" class="add-btn"><i class="fas fa-save"></i> Ajouter</button>
+            </div>
+        </div>
 
-        <div class="view-container">
-            <div class="add-form">
-                <h3><i class="fas fa-plus"></i> Ajouter Planning</h3>
-                <div class="form-grid">
-                    <select id="semaine">
-                        <option value="">S??</option>
-                        <option value="1">S01</option><option value="2">S02</option><option value="3">S03</option><option value="4">S04</option><option value="5">S05</option>
-                        <option value="6">S06</option><option value="7">S07</option><option value="8">S08</option><option value="9">S09</option><option value="10">S10</option><option value="11">S11</option><option value="12">S12</option><option value="13">S13</option>
-                        <option value="14">S14</option><option value="15">S15</option><option value="16">S16</option><option value="17">S17</option><option value="18">S18</option><option value="19">S19</option><option value="20">S20</option><option value="21">S21</option><option value="22">S22</option>
-                        <option value="23">S23</option><option value="24">S24</option><option value="25">S25</option><option value="26">S26</option><option value="27">S27</option><option value="28">S28</option><option value="29">S29</option><option value="30">S30</option><option value="31">S31</option><option value="32">S32</option><option value="33">S33</option>
-                        <option value="34">S34</option><option value="35">S35</option><option value="36">S36</option><option value="37">S37</option><option value="38">S38</option><option value="39">S39</option><option value="40">S40</option><option value="41">S41</option><option value="42">S42</option><option value="43">S43</option>
-                        <option value="44">S44</option><option value="45">S45</option><option value="46">S46</option><option value="47">S47</option><option value="48">S48</option><option value="49">S49</option><option value="50">S50</option><option value="51">S51</option><option value="52">S52</option>
-                    </select>
-                    <input type="number" id="heures" placeholder="Heures" min="0">
-                    <input type="number" id="effectif" placeholder="Effectif" min="0">
-                    <select id="ligne">
-                        <option value="">Ligne</option>
-                        <option value="F01">F01</option><option value="F02">F02</option><option value="F06">F06</option><option value="F15">F15</option>
-                        <option value="F27">F27</option><option value="F31">F31</option><option value="F73">F73</option><option value="F85">F85</option>
-                        <option value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
-                        <option value="L76">L76</option><option value="L77">L77</option><option value="L84">L84</option>
-                        <option value="L101">L101</option><option value="L108">L108</option>
-                        <option value="A12">A12</option>
-                        <option value="Boy2">Boy 2</option><option value="Boy3">Boy 3</option>
-                        <option value="420T">420 T</option><option value="450T">450 T</option><option value="400T">400 T</option>
-                        <option value="520T">520 T</option><option value="550T">550 T</option>
-                        <option value="125T">125 T</option><option value="120T">120 T</option>
-                        <option value="80T">80 T</option><option value="50T">50 T</option>
-                    </select>
-                    <select id="statut">
-                        <option value="">Statut</option>
-                        <option value="planifier">📋 Planifier</option>
-                        <option value="realiser">✅ Réaliser</option>
-                        <option value="raporter">🔴 Rapporter</option>
-                    </select>
-                    <button id="addBtn" class="add-btn"><i class="fas fa-save"></i> Ajouter</button>
-                </div>
+        <div class="legend-analytics">
+            <div class="legend">
+                <h4><i class="fas fa-palette"></i> Légende Couleurs</h4>
+                <div class="legend-planifier legend-item">📋 Planifier</div>
+                <div class="legend-realiser legend-item">✅ Réaliser</div>
+                <div class="legend-raporter legend-item">🔴 Rapporter</div>
             </div>
+            <div class="analytics" id="analyticsPanel">
+                <h4><i class="fas fa-chart-bar"></i> Analytique</h4>
+                <div class="analytic-item"><div>Total Heures</div><div class="analytic-value" id="totalHeures">0</div></div>
+                <div class="analytic-item"><div>Nombre Techniciens</div><div class="analytic-value" id="nombreTech">0</div></div>
+                <div class="analytic-item"><div>% Réalisation</div><div class="analytic-value" id="pourcentageReal">0%</div></div>
+            </div>
+        </div>
 
-            <div class="legend-analytics">
-                <div class="legend">
-                    <h4><i class="fas fa-palette"></i> Légende Couleurs</h4>
-                    <div class="legend-planifier legend-item">📋 Planifier</div>
-                    <div class="legend-realiser legend-item">✅ Réaliser</div>
-                    <div class="legend-raporter legend-item">🔴 Rapporter</div>
-                </div>
-                <div class="analytics" id="analyticsPanel">
-                    <h4><i class="fas fa-chart-bar"></i> Analytique</h4>
-                    <div class="analytic-item"><div>Total Heures</div><div class="analytic-value" id="totalHeures">0</div></div>
-                    <div class="analytic-item"><div>Moyenne/Technicien</div><div class="analytic-value" id="moyenneTech">0 H</div></div>
-                    <div class="analytic-item"><div>% Réalisation</div><div class="analytic-value" id="pourcentageReal">0%</div></div>
-                </div>
+        <div id="monthView" class="month-view active">
+            <div class="month-nav" style="text-align: center; margin: 8px;">
+                <button id="prevMonths" class="nav-btn" style="background:#007bff; color:white;"><i class="fas fa-chevron-left"></i> Précédent</button>
+                <button id="nextMonths" class="nav-btn" style="background:#007bff; color:white;">Suivant <i class="fas fa-chevron-right"></i></button>
             </div>
-
-            <div id="monthView" class="month-view active">
-                <div id="calendarContainer"></div>
-            </div>
-            <div id="weekView" class="week-view">
-                <div id="weekContainer"></div>
-            </div>
+            <div id="calendarContainer"></div>
+        </div>
+        <div id="weekView" class="week-view">
+            <div id="weekContainer"></div>
         </div>
     </div>
 
     <script type="module">
-        // FIREBASE v10 (CODEPEN COMPATIBLE)
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getDatabase, ref, push, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, push, onValue, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
-            authDomain: "tvdash-9e6b3.firebaseapp.com",
-            databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
-            projectId: "tvdash-9e6b3"
-        };
+        // REPLACE WITH YOUR VALID FIREBASE CONFIG FROM FIREBASE CONSOLE
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
+  authDomain: "tvdash-9e6b3.firebaseapp.com",
+  databaseURL: "https://tvdash-9e6b3-default-rtdb.firebaseio.com",
+  projectId: "tvdash-9e6b3",
+  storageBucket: "tvdash-9e6b3.firebasestorage.app",
+  messagingSenderId: "307274554235",
+  appId: "1:307274554235:web:862dc484ee93254383fbde",
+  measurementId: "G-0DJ7V5HPWD"
+};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -201,9 +213,13 @@
         let currentFilter = 'all';
         let currentWeek = 1;
         let currentMonth = 0;
+        let editId = null;
+        let currentMonthSet = 0; // 0 for Jan-Jun, 1 for Jul-Dec
         const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
         window.showWeek = function(weekNum) { showWeek(weekNum); };
+        window.editPlanning = function(id) { editPlanning(id); };
+        window.deletePlanning = function(id) { deletePlanning(id); };
 
         // LOGIN
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -237,6 +253,16 @@
             }
         });
 
+        // TOGGLE FORM
+        document.getElementById('toggleFormBtn').addEventListener('click', () => {
+            const form = document.getElementById('addForm');
+            const btn = document.getElementById('toggleFormBtn');
+            form.classList.toggle('visible');
+            btn.innerHTML = form.classList.contains('visible') 
+                ? '<i class="fas fa-minus"></i> Masquer Ajouter Planning'
+                : '<i class="fas fa-plus"></i> Afficher Ajouter Planning';
+        });
+
         // NAVIGATION
         document.getElementById('monthViewBtn').addEventListener('click', () => {
             document.getElementById('monthView').classList.add('active');
@@ -266,7 +292,21 @@
             updateAnalytics('month');
         });
 
-        // AJOUTER
+        document.getElementById('prevMonths').addEventListener('click', () => {
+            if (currentMonthSet > 0) {
+                currentMonthSet--;
+                initCalendar();
+            }
+        });
+
+        document.getElementById('nextMonths').addEventListener('click', () => {
+            if (currentMonthSet < 1) {
+                currentMonthSet++;
+                initCalendar();
+            }
+        });
+
+        // AJOUTER/MODIFIER
         document.getElementById('addBtn').addEventListener('click', async () => {
             const semaine = parseInt(document.getElementById('semaine').value) || 0;
             const heures = parseInt(document.getElementById('heures').value) || 0;
@@ -287,13 +327,20 @@
             };
 
             try {
-                await push(ref(database, `planning/${currentUser.uid}`), data);
+                if (editId) {
+                    await set(ref(database, `planning/${currentUser.uid}/${editId}`), data);
+                    alert('✅ Planning modifié dans ' + getMonthName(data.month) + ' !');
+                    editId = null;
+                    document.getElementById('addBtn').innerHTML = '<i class="fas fa-save"></i> Ajouter';
+                } else {
+                    await push(ref(database, `planning/${currentUser.uid}`), data);
+                    alert('✅ AJOUTÉ dans ' + getMonthName(data.month) + ' !');
+                }
                 document.getElementById('semaine').value = '';
                 document.getElementById('heures').value = '';
                 document.getElementById('effectif').value = '';
                 document.getElementById('ligne').value = '';
                 document.getElementById('statut').value = '';
-                alert('✅ AJOUTÉ dans ' + getMonthName(data.month) + ' !');
                 if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
                     showWeek(semaine);
                 }
@@ -310,7 +357,8 @@
                 planningData = {};
                 const data = snapshot.val();
                 if (data) {
-                    Object.values(data).forEach(item => {
+                    Object.entries(data).forEach(([id, item]) => {
+                        item.id = id; // Store Firebase key
                         const key = `${item.month}_${item.semaine}`;
                         if (!planningData[key]) planningData[key] = [];
                         planningData[key].push(item);
@@ -323,6 +371,37 @@
             });
         }
 
+        // EDIT/DELETE
+        function editPlanning(id) {
+            const item = Object.values(planningData).flat().find(p => p.id === id);
+            if (item) {
+                document.getElementById('semaine').value = item.semaine;
+                document.getElementById('heures').value = item.heures;
+                document.getElementById('effectif').value = item.effectif;
+                document.getElementById('ligne').value = item.ligne;
+                document.getElementById('statut').value = item.statut;
+                editId = id;
+                document.getElementById('addBtn').innerHTML = '<i class="fas fa-edit"></i> Modifier';
+                document.getElementById('addForm').classList.add('visible');
+                document.getElementById('toggleFormBtn').innerHTML = '<i class="fas fa-minus"></i> Masquer Ajouter Planning';
+            }
+        }
+
+        async function deletePlanning(id) {
+            if (confirm('Supprimer ce planning ?')) {
+                try {
+                    await remove(ref(database, `planning/${currentUser.uid}/${id}`));
+                    alert('✅ Planning supprimé !');
+                    if (document.getElementById('weekView').classList.contains('active')) {
+                        showWeek(currentWeek);
+                    }
+                    updateAnalytics(document.getElementById('weekView').classList.contains('active') ? 'week' : 'month');
+                } catch (error) {
+                    alert('❌ Erreur: ' + error.message);
+                }
+            }
+        }
+
         // ANALYTIQUES
         function updateAnalytics(viewType) {
             let data = [];
@@ -333,13 +412,12 @@
             }
 
             const totalHeures = data.reduce((sum, item) => sum + item.heures, 0);
-            const totalEffectif = data.reduce((sum, item) => sum + item.effectif, 0);
+            const totalTechniciens = data.reduce((sum, item) => sum + item.effectif, 0);
             const realiserHeures = data.filter(item => item.statut === 'realiser').reduce((sum, item) => sum + item.heures, 0);
-            const moyenneTech = totalEffectif > 0 ? (totalHeures / totalEffectif).toFixed(1) : 0;
             const pourcentageReal = totalHeures > 0 ? ((realiserHeures / totalHeures) * 100).toFixed(1) : 0;
 
             document.getElementById('totalHeures').textContent = totalHeures;
-            document.getElementById('moyenneTech').textContent = moyenneTech + ' H';
+            document.getElementById('nombreTech').textContent = totalTechniciens;
             document.getElementById('pourcentageReal').textContent = pourcentageReal + '%';
         }
 
@@ -386,6 +464,10 @@
                             <div class="planning-left">
                                 <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
                                 <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
+                            </div>
+                            <div class="planning-actions">
+                                <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     `;
@@ -434,10 +516,11 @@
         function initCalendar() {
             const container = document.getElementById('calendarContainer');
             let html = '';
-            for (let row = 0; row < 4; row++) {
+            const startMonth = currentMonthSet * 6;
+            for (let row = 0; row < 2; row++) {
                 html += '<div class="month-row">';
                 for (let i = 0; i < 3; i++) {
-                    const monthIndex = row * 3 + i;
+                    const monthIndex = startMonth + row * 3 + i;
                     if (monthIndex < 12) {
                         html += createMonthCalendar(2025, monthIndex, monthNames[monthIndex]);
                     }
@@ -448,7 +531,7 @@
 
             document.querySelectorAll('.month-header').forEach((header, index) => {
                 header.addEventListener('click', () => {
-                    currentFilter = index;
+                    currentFilter = startMonth + index;
                     document.querySelectorAll('.month-header').forEach(h => h.classList.remove('month-active'));
                     document.querySelectorAll('.month-container').forEach((c, idx) => {
                         if (idx === index) {
@@ -458,7 +541,7 @@
                             c.classList.add('month-hidden');
                         }
                     });
-                    currentMonth = index;
+                    currentMonth = startMonth + index;
                     updateAnalytics('month');
                 });
             });
@@ -485,7 +568,14 @@
                 
                 let planningHtml = '';
                 monthPlannings.forEach(item => {
-                    planningHtml += `<div class="planning-item ${item.statut}">${getEmoji(item.statut)}${item.ligne}</div>`;
+                    planningHtml += `
+                        <div class="planning-item ${item.statut}">
+                            ${getEmoji(item.statut)}${item.ligne}
+                            <div class="planning-actions">
+                                <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>`;
                 });
                 
                 gridHtml += `
