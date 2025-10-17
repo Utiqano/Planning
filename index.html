@@ -6,6 +6,8 @@
     <title>TV-DASH Analytique 2025</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
@@ -37,19 +39,18 @@
         .form-grid input, .form-grid select { padding: 6px; border: 2px solid #e1e5e9; border-radius: 5px; font-size: 0.75em; }
         .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 6px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; }
         .add-btn:hover { transform: translateY(-2px); }
-        .legend-analytics { background: white; padding: 8px; border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 8px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75em; }
+        .legend-analytics { background: white; padding: 8px; border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 8px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75em; height: 250px; }
         .legend, .analytics { text-align: center; }
-        .legend-item, .analytic-item { display: inline-block; margin: 0 6px; padding: 5px 8px; border-radius: 5px; font-weight: bold; }
+        .legend-item { display: inline-block; margin: 0 6px; padding: 5px 8px; border-radius: 5px; font-weight: bold; }
         .legend-planifier { background: #f8f9fa; border-left: 3px solid #6c757d; color: #6c757d; }
         .legend-realiser { background: #d4edda; border-left: 3px solid #28a745; color: #155724; }
         .legend-raporter { background: #f8d7da; border-left: 3px solid #dc3545; color: #721c24; }
-        .analytic-item { background: #e9ecef; border-radius: 5px; margin: 4px 0; padding: 6px; }
-        .analytic-value { font-size: 0.9em; font-weight: bold; color: #28a745; }
-        .view-container { max-width: 1400px; margin: 0 auto; padding: 8px; max-height: calc(100vh - 120px); overflow: hidden; }
+        .analytics canvas { max-width: 50%; max-height: 200px; margin: 0 auto; }
+        .view-container { max-width: 1400px; margin: 0 auto; padding: 8px; max-height: calc(100vh - 370px); overflow: hidden; }
         .month-view, .week-view { display: none; }
         .month-view.active, .week-view.active { display: block; }
         .month-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        .month-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; height: 280px; }
+        .month-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; height: 260px; }
         .month-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
         .month-header:hover { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); transform: scale(1.02); }
         .month-title { font-size: 0.9em; font-weight: bold; }
@@ -57,10 +58,10 @@
         .month-hidden { display: none !important; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; height: calc(100% - 35px); }
         .day-header { background: #f8f9fa; padding: 4px; text-align: center; font-weight: bold; color: #333; font-size: 0.65em; }
-        .day-cell { background: white; padding: 2px; min-height: 45px; position: relative; border: 1px solid #dee2e6; font-size: 0.65em; }
+        .day-cell { background: white; padding: 2px; min-height: 40px; position: relative; border: 1px solid #dee2e6; font-size: 0.65em; }
         .day-number { font-weight: bold; margin-bottom: 2px; text-align: center; }
         .week-number { position: absolute; top: 2px; right: 3px; background: #e9ecef; padding: 2px 4px; border-radius: 8px; font-size: 0.55em; color: #495057; }
-        .week-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 10px; height: 650px; }
+        .week-container { background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 10px; height: 600px; }
         .week-header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); padding: 15px; text-align: center; color: #212529; }
         .week-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
         .week-select-group { display: flex; gap: 8px; align-items: center; }
@@ -69,7 +70,7 @@
         .week-title { font-size: 1.5em; font-weight: bold; }
         .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #dee2e6; height: calc(100% - 100px); }
         .week-day-header { background: #f8f9fa; padding: 12px; text-align: center; font-weight: bold; color: #333; font-size: 1em; }
-        .week-day-cell { background: white; padding: 12px; min-height: 200px; border: 1px solid #dee2e6; font-size: 0.9em; }
+        .week-day-cell { background: white; padding: 12px; min-height: 180px; border: 1px solid #dee2e6; font-size: 0.9em; }
         .week-date { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; text-align: center; color: #495057; }
         .week-plannings { display: flex; flex-direction: column; gap: 8px; }
         .planning-item { padding: 10px; border-radius: 6px; font-size: 0.9em; cursor: pointer; border-left: 4px solid; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
@@ -86,8 +87,8 @@
         .summary-table th, .summary-table td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
         .summary-table th { background: #dee2e6; font-weight: bold; }
         .month-summary { padding: 8px; background: #f8f9fa; margin: 6px; border-radius: 5px; }
-        @media (max-width: 1200px) { .month-row { grid-template-columns: repeat(2, 1fr); } .legend-analytics { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .week-nav { flex-direction: column; } .week-container { height: 500px; } .week-day-cell { min-height: 150px; } }
+        @media (max-width: 1200px) { .month-row { grid-template-columns: repeat(2, 1fr); } .legend-analytics { grid-template-columns: 1fr; height: auto; } .analytics canvas { max-height: 150px; } }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .week-nav { flex-direction: column; } .week-container { height: 500px; } .week-day-cell { min-height: 150px; } .legend-analytics { height: auto; } .analytics canvas { max-height: 120px; } }
     </style>
 </head>
 <body>
@@ -139,11 +140,13 @@
                     <option value="">Ligne</option>
                     <option value="F01">F01</option><option value="F02">F02</option><option value="F06">F06</option><option value="F15">F15</option>
                     <option value="F27">F27</option><option value="F31">F31</option><option value="F73">F73</option><option value="F85">F85</option>
-                    <option value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
+                    <option
+                            value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
                     <option value="L76">L76</option><option value="L77">L77</option><option value="L84">L84</option>
                     <option value="L101">L101</option><option value="L108">L108</option>
                     <option value="A12">A12</option>
                     <option value="Boy2">Boy 2</option><option value="Boy3">Boy 3</option>
+                    <option                value="F83">F83</option>
                     <option value="420T">420 T</option><option value="450T">450 T</option><option value="400T">400 T</option>
                     <option value="520T">520 T</option><option value="550T">550 T</option>
                     <option value="125T">125 T</option><option value="120T">120 T</option>
@@ -168,9 +171,10 @@
             </div>
             <div class="analytics" id="analyticsPanel">
                 <h4><i class="fas fa-chart-bar"></i> Analytique</h4>
-                <div class="analytic-item"><div>Total Heures</div><div class="analytic-value" id="totalHeures">0</div></div>
-                <div class="analytic-item"><div>Nombre Techniciens</div><div class="analytic-value" id="nombreTech">0</div></div>
-                <div class="analytic-item"><div>% Réalisation</div><div class="analytic-value" id="pourcentageReal">0%</div></div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <canvas id="metricsChart" style="max-width: 50%;"></canvas>
+                    <canvas id="realisationChart" style="max-width: 50%;"></canvas>
+                </div>
             </div>
         </div>
 
@@ -191,8 +195,11 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getDatabase, ref, push, onValue, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
+        // Register Chart.js data labels plugin
+        Chart.register(ChartDataLabels);
+
         // REPLACE WITH YOUR VALID FIREBASE CONFIG FROM FIREBASE CONSOLE
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
   authDomain: "tvdash-9e6b3.firebaseapp.com",
@@ -203,7 +210,6 @@ const firebaseConfig = {
   appId: "1:307274554235:web:862dc484ee93254383fbde",
   measurementId: "G-0DJ7V5HPWD"
 };
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const database = getDatabase(app);
@@ -216,6 +222,8 @@ const firebaseConfig = {
         let editId = null;
         let currentMonthSet = 0; // 0 for Jan-Jun, 1 for Jul-Dec
         const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        let metricsChart = null;
+        let realisationChart = null;
 
         window.showWeek = function(weekNum) { showWeek(weekNum); };
         window.editPlanning = function(id) { editPlanning(id); };
@@ -275,12 +283,17 @@ const firebaseConfig = {
         });
 
         document.getElementById('weekViewBtn').addEventListener('click', () => {
-            document.getElementById('weekView').classList.add('active');
-            document.getElementById('monthView').classList.remove('active');
-            document.getElementById('weekViewBtn').classList.add('active');
-            document.getElementById('monthViewBtn').classList.remove('active');
-            showWeek(currentWeek);
-            updateAnalytics('week');
+            try {
+                document.getElementById('monthView').classList.remove('active');
+                document.getElementById('weekView').classList.add('active');
+                document.getElementById('monthViewBtn').classList.remove('active');
+                document.getElementById('weekViewBtn').classList.add('active');
+                showWeek(currentWeek);
+                updateAnalytics('week');
+            } catch (error) {
+                console.error('Error switching to week view:', error);
+                alert('❌ Erreur lors du passage à la vue hebdomadaire : ' + error.message);
+            }
         });
 
         document.getElementById('showAllBtn').addEventListener('click', () => {
@@ -416,74 +429,141 @@ const firebaseConfig = {
             const realiserHeures = data.filter(item => item.statut === 'realiser').reduce((sum, item) => sum + item.heures, 0);
             const pourcentageReal = totalHeures > 0 ? ((realiserHeures / totalHeures) * 100).toFixed(1) : 0;
 
-            document.getElementById('totalHeures').textContent = totalHeures;
-            document.getElementById('nombreTech').textContent = totalTechniciens;
-            document.getElementById('pourcentageReal').textContent = pourcentageReal + '%';
+            // Bar Chart for Total Heures and Nombre Techniciens
+            if (metricsChart) metricsChart.destroy();
+            metricsChart = new Chart(document.getElementById('metricsChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Total Heures', 'Nombre Techniciens'],
+                    datasets: [{
+                        label: viewType === 'week' ? 'Semaine ' + currentWeek : monthNames[currentMonth],
+                        data: [totalHeures, totalTechniciens],
+                        backgroundColor: ['#28a745', '#007bff'],
+                        borderColor: ['#1e7e34', '#005cbf'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Métriques', font: { size: 14 } },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            font: { size: 14, weight: 'bold' },
+                            color: '#333',
+                            formatter: (value) => value
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Valeur', font: { size: 12 } } }
+                    }
+                }
+            });
+
+            // Doughnut Chart for % Réalisation
+            if (realisationChart) realisationChart.destroy();
+            realisationChart = new Chart(document.getElementById('realisationChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Réalisé', 'Non Réalisé'],
+                    datasets: [{
+                        data: [realiserHeures, totalHeures - realiserHeures],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderColor: ['#1e7e34', '#b02a37'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 12 } } },
+                        title: { display: true, text: '% Réalisation (' + pourcentageReal + '%)', font: { size: 14 } },
+                        datalabels: {
+                            font: { size: 14, weight: 'bold' },
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                                return total > 0 ? Math.round((value / total) * 100) + '%' : '0%';
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // VUE HEBDOMADAIRE
         function showWeek(weekNum) {
-            currentWeek = weekNum;
-            const container = document.getElementById('weekContainer');
-            const weekStart = getWeekStartDate(2025, weekNum);
-            const weekDays = [];
-            for (let i = 0; i < 7; i++) {
-                const date = new Date(weekStart);
-                date.setDate(weekStart.getDate() + i);
-                weekDays.push(date);
-            }
+            try {
+                currentWeek = weekNum;
+                const container = document.getElementById('weekContainer');
+                if (!container) throw new Error('weekContainer not found');
+                const weekStart = getWeekStartDate(2025, weekNum);
+                const weekDays = [];
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(weekStart);
+                    date.setDate(weekStart.getDate() + i);
+                    weekDays.push(date);
+                }
 
-            let html = `
-                <div class="week-container">
-                    <div class="week-header">
-                        <div class="week-nav">
-                            <button class="week-nav-btn" onclick="window.showWeek(${Math.max(1, weekNum-1)})"><i class="fas fa-chevron-left"></i></button>
-                            <div class="week-select-group">
-                                <label>Semaine:</label>
-                                <select class="week-select" onchange="window.showWeek(parseInt(this.value))">
-                                    ${Array.from({length: 52}, (_, i) => `<option value="${i+1}" ${i+1 === weekNum ? 'selected' : ''}>S${(i+1).toString().padStart(2, '0')}</option>`).join('')}
-                                </select>
+                let html = `
+                    <div class="week-container">
+                        <div class="week-header">
+                            <div class="week-nav">
+                                <button class="week-nav-btn" onclick="window.showWeek(${Math.max(1, weekNum-1)})"><i class="fas fa-chevron-left"></i></button>
+                                <div class="week-select-group">
+                                    <label>Semaine:</label>
+                                    <select class="week-select" onchange="window.showWeek(parseInt(this.value))">
+                                        ${Array.from({length: 52}, (_, i) => `<option value="${i+1}" ${i+1 === weekNum ? 'selected' : ''}>S${(i+1).toString().padStart(2, '0')}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="week-title">Semaine ${weekNum.toString().padStart(2, '0')} 2025</div>
+                                <button class="week-nav-btn" onclick="window.showWeek(${Math.min(52, weekNum+1)})"><i class="fas fa-chevron-right"></i></button>
                             </div>
-                            <div class="week-title">Semaine ${weekNum.toString().padStart(2, '0')} 2025</div>
-                            <button class="week-nav-btn" onclick="window.showWeek(${Math.min(52, weekNum+1)})"><i class="fas fa-chevron-right"></i></button>
                         </div>
-                    </div>
-                    <div class="week-grid">
-            `;
+                        <div class="week-grid">
+                `;
 
-            ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].forEach(day => {
-                html += `<div class="week-day-header">${day}</div>`;
-            });
+                ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].forEach(day => {
+                    html += `<div class="week-day-header">${day}</div>`;
+                });
 
-            weekDays.forEach(date => {
-                const dayPlannings = getWeekPlannings(weekNum);
-                let planningHtml = '';
-                dayPlannings.forEach(item => {
-                    planningHtml += `
-                        <div class="planning-item ${item.statut}">
-                            <div class="planning-left">
-                                <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
-                                <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
+                weekDays.forEach(date => {
+                    const dayPlannings = getWeekPlannings(weekNum);
+                    let planningHtml = '';
+                    dayPlannings.forEach(item => {
+                        planningHtml += `
+                            <div class="planning-item ${item.statut}">
+                                <div class="planning-left">
+                                    <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
+                                    <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
+                                </div>
+                                <div class="planning-actions">
+                                    <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
-                            <div class="planning-actions">
-                                <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
-                            </div>
+                        `;
+                    });
+
+                    html += `
+                        <div class="week-day-cell">
+                            <div class="week-date">${date.getDate()}/${date.getMonth()+1}</div>
+                            <div class="week-plannings">${planningHtml || '<div style="color:#6c757d; font-style:italic;">Aucun planning</div>'}</div>
                         </div>
                     `;
                 });
 
-                html += `
-                    <div class="week-day-cell">
-                        <div class="week-date">${date.getDate()}/${date.getMonth()+1}</div>
-                        <div class="week-plannings">${planningHtml || '<div style="color:#6c757d; font-style:italic;">Aucun planning</div>'}</div>
-                    </div>
-                `;
-            });
-
-            html += `</div>${createWeekSummary(weekNum)}</div>`;
-            container.innerHTML = html;
-            updateAnalytics('week');
+                html += `</div>${createWeekSummary(weekNum)}</div>`;
+                container.innerHTML = html;
+                updateAnalytics('week');
+            } catch (error) {
+                console.error('Error in showWeek:', error);
+                alert('❌ Erreur dans la vue hebdomadaire : ' + error.message);
+            }
         }
 
         function getWeekPlannings(weekNum) {
@@ -500,7 +580,7 @@ const firebaseConfig = {
                         <tbody>
                             ${weekPlannings.map(item => `
                                 <tr class="${item.statut}">
-                                    <td>S${item.semaine}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
+                                    <td>S${item.semaine.toString().padStart(2, '0')}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
                                     <td>${item.effectif}</td><td>${item.ligne}</td>
                                     <td>${getEmoji(item.statut)}</td>
                                 </tr>
@@ -514,50 +594,56 @@ const firebaseConfig = {
 
         // VUE MENSUELLE
         function initCalendar() {
-            const container = document.getElementById('calendarContainer');
-            let html = '';
-            const startMonth = currentMonthSet * 6;
-            for (let row = 0; row < 2; row++) {
-                html += '<div class="month-row">';
-                for (let i = 0; i < 3; i++) {
-                    const monthIndex = startMonth + row * 3 + i;
-                    if (monthIndex < 12) {
-                        html += createMonthCalendar(2025, monthIndex, monthNames[monthIndex]);
-                    }
-                }
-                html += '</div>';
-            }
-            container.innerHTML = html;
-
-            document.querySelectorAll('.month-header').forEach((header, index) => {
-                header.addEventListener('click', () => {
-                    currentFilter = startMonth + index;
-                    document.querySelectorAll('.month-header').forEach(h => h.classList.remove('month-active'));
-                    document.querySelectorAll('.month-container').forEach((c, idx) => {
-                        if (idx === index) {
-                            c.classList.remove('month-hidden');
-                            header.classList.add('month-active');
-                        } else {
-                            c.classList.add('month-hidden');
+            try {
+                const container = document.getElementById('calendarContainer');
+                if (!container) throw new Error('calendarContainer not found');
+                let html = '';
+                const startMonth = currentMonthSet * 6;
+                for (let row = 0; row < 2; row++) {
+                    html += '<div class="month-row">';
+                    for (let i = 0; i < 3; i++) {
+                        const monthIndex = startMonth + row * 3 + i;
+                        if (monthIndex < 12) {
+                            html += createMonthCalendar(2025, monthIndex, monthNames[monthIndex]);
                         }
+                    }
+                    html += '</div>';
+                }
+                container.innerHTML = html;
+
+                document.querySelectorAll('.month-header').forEach((header, index) => {
+                    header.addEventListener('click', () => {
+                        currentFilter = startMonth + index;
+                        document.querySelectorAll('.month-header').forEach(h => h.classList.remove('month-active'));
+                        document.querySelectorAll('.month-container').forEach((c, idx) => {
+                            if (idx === index) {
+                                c.classList.remove('month-hidden');
+                                header.classList.add('month-active');
+                            } else {
+                                c.classList.add('month-hidden');
+                            }
+                        });
+                        currentMonth = startMonth + index;
+                        updateAnalytics('month');
                     });
-                    currentMonth = startMonth + index;
-                    updateAnalytics('month');
                 });
-            });
-            updateAnalytics('month');
+                updateAnalytics('month');
+            } catch (error) {
+                console.error('Error in initCalendar:', error);
+                alert('❌ Erreur dans la vue mensuelle : ' + error.message);
+            }
         }
 
         function createMonthCalendar(year, month, monthName) {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay();
+            const firstDay = new Date(year, month, 1).getDay() || 7; // Adjust for Sunday=0 to Monday=1
             
             let gridHtml = '<div class="calendar-grid">';
             ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
                 gridHtml += `<div class="day-header">${day}</div>`;
             });
             
-            for (let i = 0; i < firstDay; i++) {
+            for (let i = 1; i < firstDay; i++) {
                 gridHtml += '<div class="day-cell"></div>';
             }
             
@@ -570,7 +656,7 @@ const firebaseConfig = {
                 monthPlannings.forEach(item => {
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
-                            ${getEmoji(item.statut)}${item.ligne}
+                            ${getEmoji(item.statut)} ${item.ligne}
                             <div class="planning-actions">
                                 <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
@@ -588,7 +674,7 @@ const firebaseConfig = {
             }
             
             const totalCells = 42;
-            const filledCells = firstDay + daysInMonth;
+            const filledCells = firstDay - 1 + daysInMonth;
             for (let i = filledCells; i < totalCells; i++) {
                 gridHtml += '<div class="day-cell"></div>';
             }
@@ -635,7 +721,7 @@ const firebaseConfig = {
             
             allPlannings.forEach(item => {
                 excelData.push([
-                    `S${item.semaine}`, monthNames[item.month], item.heures, item.effectif,
+                    `S${item.semaine.toString().padStart(2, '0')}`, monthNames[item.month], item.heures, item.effectif,
                     item.ligne, item.statut,
                     new Date(item.createdAt).toLocaleDateString('fr-FR')
                 ]);
