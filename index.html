@@ -37,6 +37,7 @@
         .add-form.visible { max-height: 150px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-top: 8px; }
         .form-grid input, .form-grid select { padding: 6px; border: 2px solid #e1e5e9; border-radius: 5px; font-size: 0.75em; }
+        #dateInput { display: none; }
         .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 6px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; }
         .add-btn:hover { transform: translateY(-2px); }
         .legend-analytics { background: white; padding: 8px; border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 8px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75em; height: 250px; }
@@ -80,6 +81,7 @@
         .planning-left { display: flex; flex-direction: column; flex: 1; }
         .planning-line { font-weight: bold; font-size: 1em; }
         .planning-details { font-size: 0.8em; opacity: 0.8; }
+        .planning-date { font-size: 0.8em; opacity: 0.8; }
         .planning-actions { display: flex; gap: 6px; }
         .action-btn { background: none; border: none; cursor: pointer; font-size: 0.9em; color: #333; }
         .action-btn:hover { color: #007bff; }
@@ -138,15 +140,15 @@
                 <input type="number" id="effectif" placeholder="Effectif" min="0">
                 <select id="ligne">
                     <option value="">Ligne</option>
-                    <option value="F01">F01</option><option value="F02">F02</option><option value="F06">F06</option><option value="F15">F15</option>
+                    <option value="F01">F01</option><option value="F02">F02</option>
+                  <option value="F83">F83</option><option
+                                                          <option value="F06">F06</option><option value="F15">F15</option>
                     <option value="F27">F27</option><option value="F31">F31</option><option value="F73">F73</option><option value="F85">F85</option>
-                    <option
-                            value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
+                    <option value="F86">F86</option><option value="F87">F87</option><option value="F99">F99</option>
                     <option value="L76">L76</option><option value="L77">L77</option><option value="L84">L84</option>
                     <option value="L101">L101</option><option value="L108">L108</option>
                     <option value="A12">A12</option>
                     <option value="Boy2">Boy 2</option><option value="Boy3">Boy 3</option>
-                    <option                value="F83">F83</option>
                     <option value="420T">420 T</option><option value="450T">450 T</option><option value="400T">400 T</option>
                     <option value="520T">520 T</option><option value="550T">550 T</option>
                     <option value="125T">125 T</option><option value="120T">120 T</option>
@@ -158,6 +160,7 @@
                     <option value="realiser">✅ Réaliser</option>
                     <option value="raporter">🔴 Rapporter</option>
                 </select>
+                <input type="date" id="dateInput" placeholder="Date de Réalisation/Rapporter">
                 <button id="addBtn" class="add-btn"><i class="fas fa-save"></i> Ajouter</button>
             </div>
         </div>
@@ -199,7 +202,7 @@
         Chart.register(ChartDataLabels);
 
         // REPLACE WITH YOUR VALID FIREBASE CONFIG FROM FIREBASE CONSOLE
-     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD4m7CfZguEmwLMcrbdVIg5Uu7NqQynbuE",
   authDomain: "tvdash-9e6b3.firebaseapp.com",
@@ -210,6 +213,7 @@ const firebaseConfig = {
   appId: "1:307274554235:web:862dc484ee93254383fbde",
   measurementId: "G-0DJ7V5HPWD"
 };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const database = getDatabase(app);
@@ -271,6 +275,21 @@ const firebaseConfig = {
                 : '<i class="fas fa-plus"></i> Afficher Ajouter Planning';
         });
 
+        // DYNAMIC DATE INPUT
+        const statutSelect = document.getElementById('statut');
+        const dateInput = document.getElementById('dateInput');
+        statutSelect.addEventListener('change', () => {
+            if (statutSelect.value === 'realiser' || statutSelect.value === 'raporter') {
+                dateInput.style.display = 'block';
+                dateInput.required = true;
+                dateInput.placeholder = statutSelect.value === 'realiser' ? 'Date de Réalisation' : 'Date Rapporter';
+            } else {
+                dateInput.style.display = 'none';
+                dateInput.required = false;
+                dateInput.value = '';
+            }
+        });
+
         // NAVIGATION
         document.getElementById('monthViewBtn').addEventListener('click', () => {
             document.getElementById('monthView').classList.add('active');
@@ -326,9 +345,14 @@ const firebaseConfig = {
             const effectif = parseInt(document.getElementById('effectif').value) || 0;
             const ligne = document.getElementById('ligne').value;
             const statut = document.getElementById('statut').value;
+            const date = document.getElementById('dateInput').value;
 
             if (!semaine || !heures || !effectif || !ligne || !statut) {
                 alert('⚠️ TOUS les champs requis !');
+                return;
+            }
+            if ((statut === 'realiser' || statut === 'raporter') && !date) {
+                alert('⚠️ Date de Réalisation/Rapporter requise !');
                 return;
             }
 
@@ -338,6 +362,8 @@ const firebaseConfig = {
                 createdAt: new Date().toISOString(),
                 month: getMonthFromWeek(semaine)
             };
+            if (statut === 'realiser') data.dateRealisation = date;
+            if (statut === 'raporter') data.dateRapporter = date;
 
             try {
                 if (editId) {
@@ -354,6 +380,8 @@ const firebaseConfig = {
                 document.getElementById('effectif').value = '';
                 document.getElementById('ligne').value = '';
                 document.getElementById('statut').value = '';
+                document.getElementById('dateInput').value = '';
+                document.getElementById('dateInput').style.display = 'none';
                 if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
                     showWeek(semaine);
                 }
@@ -393,6 +421,21 @@ const firebaseConfig = {
                 document.getElementById('effectif').value = item.effectif;
                 document.getElementById('ligne').value = item.ligne;
                 document.getElementById('statut').value = item.statut;
+                if (item.statut === 'realiser' && item.dateRealisation) {
+                    document.getElementById('dateInput').style.display = 'block';
+                    document.getElementById('dateInput').required = true;
+                    document.getElementById('dateInput').value = item.dateRealisation;
+                    document.getElementById('dateInput').placeholder = 'Date de Réalisation';
+                } else if (item.statut === 'raporter' && item.dateRapporter) {
+                    document.getElementById('dateInput').style.display = 'block';
+                    document.getElementById('dateInput').required = true;
+                    document.getElementById('dateInput').value = item.dateRapporter;
+                    document.getElementById('dateInput').placeholder = 'Date Rapporter';
+                } else {
+                    document.getElementById('dateInput').style.display = 'none';
+                    document.getElementById('dateInput').required = false;
+                    document.getElementById('dateInput').value = '';
+                }
                 editId = id;
                 document.getElementById('addBtn').innerHTML = '<i class="fas fa-edit"></i> Modifier';
                 document.getElementById('addForm').classList.add('visible');
@@ -535,11 +578,17 @@ const firebaseConfig = {
                     const dayPlannings = getWeekPlannings(weekNum);
                     let planningHtml = '';
                     dayPlannings.forEach(item => {
+                        const dateStr = item.statut === 'realiser' && item.dateRealisation 
+                            ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
+                            : item.statut === 'raporter' && item.dateRapporter 
+                            ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
+                            : '';
                         planningHtml += `
                             <div class="planning-item ${item.statut}">
                                 <div class="planning-left">
                                     <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
                                     <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
+                                    ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
                                 </div>
                                 <div class="planning-actions">
                                     <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
@@ -576,16 +625,17 @@ const firebaseConfig = {
                 <div class="month-summary">
                     <h4>Résumé Semaine ${weekNum.toString().padStart(2, '0')}</h4>
                     <table class="summary-table">
-                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th></tr></thead>
+                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th><th>Date</th></tr></thead>
                         <tbody>
                             ${weekPlannings.map(item => `
                                 <tr class="${item.statut}">
                                     <td>S${item.semaine.toString().padStart(2, '0')}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
                                     <td>${item.effectif}</td><td>${item.ligne}</td>
                                     <td>${getEmoji(item.statut)}</td>
+                                    <td>${item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-'}</td>
                                 </tr>
                             `).join('')}
-                            ${weekPlannings.length === 0 ? '<tr><td colspan="6" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
+                            ${weekPlannings.length === 0 ? '<tr><td colspan="7" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -654,9 +704,18 @@ const firebaseConfig = {
                 
                 let planningHtml = '';
                 monthPlannings.forEach(item => {
+                    const dateStr = item.statut === 'realiser' && item.dateRealisation 
+                        ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
+                        : item.statut === 'raporter' && item.dateRapporter 
+                        ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
+                        : '';
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
-                            ${getEmoji(item.statut)} ${item.ligne}
+                            <div class="planning-left">
+                                <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
+                                <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
+                                ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
+                            </div>
                             <div class="planning-actions">
                                 <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="action-btn" onclick="window.deletePlanning('${item.id}')"><i class="fas fa-trash"></i></button>
@@ -717,12 +776,13 @@ const firebaseConfig = {
         // EXPORT
         document.getElementById('exportBtn').addEventListener('click', () => {
             const allPlannings = Object.values(planningData).flat();
-            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date']];
+            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date Réalisation/Rapporter', 'Date Création']];
             
             allPlannings.forEach(item => {
                 excelData.push([
                     `S${item.semaine.toString().padStart(2, '0')}`, monthNames[item.month], item.heures, item.effectif,
                     item.ligne, item.statut,
+                    item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-',
                     new Date(item.createdAt).toLocaleDateString('fr-FR')
                 ]);
             });
