@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -38,6 +39,7 @@
         .nav-week { background: #ffc107; color: #212529; }
         .export-btn { background: #17a2b8; color: white; }
         .logout-btn { background: #e74c3c; color: white; }
+        .preventive-btn { background: #fd7e14; color: white; }
         .toggle-form-btn { background: #6c757d; color: white; padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; margin: 8px auto; display: block; }
         .add-form { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); margin: 8px auto; max-width: 1400px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
         .add-form.visible { max-height: 150px; }
@@ -49,9 +51,10 @@
         .legend-analytics { background: white; padding: 8px; border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 8px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75em; height: 250px; }
         .legend, .analytics { text-align: center; }
         .legend-item { display: inline-block; margin: 0 6px; padding: 5px 8px; border-radius: 5px; font-weight: bold; }
-        .legend-planifier { background: #f8f9fa; border-left: 3px solid #6c757d; color: #6c757d; }
+        .legend-planifier { background: #fff3cd; border-left: 3px solid #ffc107; color: #856404; }
         .legend-realiser { background: #d4edda; border-left: 3px solid #28a745; color: #155724; }
-        .legend-raporter { background: #f8d7da; border-left: 3px solid #dc3545; color: #721c24; }
+        .legend-raporter { background: #ffe5d0; border-left: 3px solid #fd7e14; color: #bd5b13; }
+        .legend-non_realiser { background: #f8d7da; border-left: 3px solid #dc3545; color: #721c24; }
         .analytics canvas { max-width: 50%; max-height: 200px; margin: 0 auto; }
         .month-view, .week-view { display: none; }
         .month-view.active, .week-view.active { display: block; }
@@ -117,9 +120,10 @@
         .week-date { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; text-align: center; color: #495057; }
         .week-plannings { display: flex; flex-direction: column; gap: 8px; }
         .planning-item { padding: 10px; border-radius: 6px; font-size: 0.9em; cursor: pointer; border-left: 4px solid; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
-        .planning-item.planifier { background: #f8f9fa; color: #6c757d; border-left-color: #6c757d; }
+        .planning-item.planifier { background: #fff3cd; color: #856404; border-left-color: #ffc107; }
         .planning-item.realiser { background: #d4edda; color: #155724; border-left-color: #28a745; }
-        .planning-item.raporter { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
+        .planning-item.raporter { background: #ffe5d0; color: #bd5b13; border-left-color: #fd7e14; }
+        .planning-item.non_realiser { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
         .planning-left { display: flex; flex-direction: column; flex: 1; }
         .planning-line { font-weight: bold; font-size: 1em; }
         .planning-details { font-size: 0.8em; opacity: 0.8; }
@@ -130,6 +134,10 @@
         .summary-table { width: 100%; border-collapse: collapse; font-size: 0.8em; margin-top: 12px; }
         .summary-table th, .summary-table td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
         .summary-table th { background: #dee2e6; font-weight: bold; }
+        .summary-table tr.planifier { background: #fff3cd; color: #856404; }
+        .summary-table tr.realiser { background: #d4edda; color: #155724; }
+        .summary-table tr.raporter { background: #ffe5d0; color: #bd5b13; }
+        .summary-table tr.non_realiser { background: #f8d7da; color: #721c24; }
         .month-summary { padding: 8px; background: #f8f9fa; margin: 6px; border-radius: 5px; }
         
         /* TV Mode Styles */
@@ -188,6 +196,7 @@
             <div class="nav-buttons">
                 <button id="monthViewBtn" class="nav-btn nav-month active"><i class="fas fa-calendar"></i> Mois</button>
                 <button id="weekViewBtn" class="nav-btn nav-week"><i class="fas fa-calendar-week"></i> Hebdo</button>
+                <button id="preventiveBtn" class="nav-btn preventive-btn"><i class="fas fa-print"></i> Preventive N2</button>
                 <button id="exportBtn" class="nav-btn export-btn"><i class="fas fa-file-excel"></i> Excel</button>
                 <button id="showAllBtn" style="background:#007bff; color:white;"><i class="fas fa-eye"></i> Tous</button>
                 <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
@@ -223,12 +232,14 @@
                     <option value="520T">520 T</option><option value="550T">550 T</option>
                     <option value="125T">125 T</option><option value="120T">120 T</option>
                     <option value="80T">80 T</option><option value="50T">50 T</option>
+                    <option value="Imprimer Preventive Niveau 2">Imprimer Preventive Niveau 2</option>
                 </select>
                 <select id="statut">
                     <option value="">Statut</option>
                     <option value="planifier">📋 Planifier</option>
                     <option value="realiser">✅ Réaliser</option>
                     <option value="raporter">🔴 Rapporter</option>
+                    <option value="non_realiser">❌ Non Réaliser</option>
                 </select>
                 <input type="date" id="dateInput" placeholder="Date de Réalisation/Rapporter">
                 <input type="text" id="technicienInput" placeholder="Nom Technicien">
@@ -242,6 +253,7 @@
                 <div class="legend-planifier legend-item">📋 Planifier</div>
                 <div class="legend-realiser legend-item">✅ Réaliser</div>
                 <div class="legend-raporter legend-item">🔴 Rapporter</div>
+                <div class="legend-non_realiser legend-item">❌ Non Réaliser</div>
             </div>
             <div class="analytics" id="analyticsPanel">
                 <h4><i class="fas fa-chart-bar"></i> Analytique</h4>
@@ -362,6 +374,11 @@
             }
         });
 
+        // Preventive button
+        document.getElementById('preventiveBtn').addEventListener('click', () => {
+            window.open('https://www.wkwtunisie.com', '_blank');
+        });
+
         // Fullscreen change for TV mode
         document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
@@ -387,10 +404,10 @@
         const technicienInput = document.getElementById('technicienInput');
         statutSelect.addEventListener('change', () => {
             const value = statutSelect.value;
-            if (value === 'realiser' || value === 'raporter') {
+            if (value === 'realiser' || value === 'raporter' || value === 'non_realiser') {
                 dateInput.style.display = 'block';
                 dateInput.required = true;
-                dateInput.placeholder = value === 'realiser' ? 'Date de Réalisation' : 'Date Rapporter';
+                dateInput.placeholder = value === 'realiser' ? 'Date de Réalisation' : value === 'raporter' ? 'Date Rapporter' : 'Date Non Réalisation';
             } else {
                 dateInput.style.display = 'none';
                 dateInput.required = false;
@@ -461,8 +478,8 @@
                 alert('⚠️ TOUS les champs requis !');
                 return;
             }
-            if ((statut === 'realiser' || statut === 'raporter') && !date) {
-                alert('⚠️ Date de Réalisation/Rapporter requise !');
+            if ((statut === 'realiser' || statut === 'raporter' || statut === 'non_realiser') && !date) {
+                alert('⚠️ Date requise !');
                 return;
             }
             if (statut === 'realiser' && !technicien) {
@@ -471,7 +488,7 @@
             }
 
             let month = getMonthFromWeek(semaine);
-            if (statut === 'realiser' || statut === 'raporter') {
+            if (statut === 'realiser' || statut === 'raporter' || statut === 'non_realiser') {
                 const actualDate = new Date(date);
                 semaine = getWeekNumber(actualDate);
                 month = actualDate.getMonth();
@@ -486,8 +503,11 @@
             if (statut === 'realiser') {
                 data.dateRealisation = date;
                 data.technicien = technicien;
+            } else if (statut === 'raporter') {
+                data.dateRapporter = date;
+            } else if (statut === 'non_realiser') {
+                data.dateNonRealisation = date;
             }
-            if (statut === 'raporter') data.dateRapporter = date;
 
             try {
                 if (editId) {
@@ -561,6 +581,14 @@
                     document.getElementById('dateInput').required = true;
                     document.getElementById('dateInput').value = item.dateRapporter;
                     document.getElementById('dateInput').placeholder = 'Date Rapporter';
+                    document.getElementById('technicienInput').style.display = 'none';
+                    document.getElementById('technicienInput').required = false;
+                    document.getElementById('technicienInput').value = '';
+                } else if (item.statut === 'non_realiser' && item.dateNonRealisation) {
+                    document.getElementById('dateInput').style.display = 'block';
+                    document.getElementById('dateInput').required = true;
+                    document.getElementById('dateInput').value = item.dateNonRealisation;
+                    document.getElementById('dateInput').placeholder = 'Date Non Réalisation';
                     document.getElementById('technicienInput').style.display = 'none';
                     document.getElementById('technicienInput').required = false;
                     document.getElementById('technicienInput').value = '';
@@ -659,23 +687,25 @@
             const hoursByStatus = {
                 planifier: plannings.filter(p => p.statut === 'planifier').reduce((sum, p) => sum + p.heures, 0),
                 realiser: plannings.filter(p => p.statut === 'realiser').reduce((sum, p) => sum + p.heures, 0),
-                raporter: plannings.filter(p => p.statut === 'raporter').reduce((sum, p) => sum + p.heures, 0)
+                raporter: plannings.filter(p => p.statut === 'raporter').reduce((sum, p) => sum + p.heures, 0),
+                non_realiser: plannings.filter(p => p.statut === 'non_realiser').reduce((sum, p) => sum + p.heures, 0)
             };
 
             const byStatus = {
                 planifier: plannings.filter(p => p.statut === 'planifier').length,
                 realiser: plannings.filter(p => p.statut === 'realiser').length,
-                raporter: plannings.filter(p => p.statut === 'raporter').length
+                raporter: plannings.filter(p => p.statut === 'raporter').length,
+                non_realiser: plannings.filter(p => p.statut === 'non_realiser').length
             };
 
             detailsHoursChart = new Chart(document.getElementById('detailsHoursChart'), {
                 type: 'bar',
                 data: {
-                    labels: ['Planifier', 'Réaliser', 'Rapporter'],
+                    labels: ['Planifier', 'Réaliser', 'Rapporter', 'Non Réaliser'],
                     datasets: [{
                         label: 'Heures',
-                        data: [hoursByStatus.planifier, hoursByStatus.realiser, hoursByStatus.raporter],
-                        backgroundColor: ['#6c757d', '#28a745', '#dc3545']
+                        data: [hoursByStatus.planifier, hoursByStatus.realiser, hoursByStatus.raporter, hoursByStatus.non_realiser],
+                        backgroundColor: ['#ffc107', '#28a745', '#fd7e14', '#dc3545']
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
@@ -684,10 +714,10 @@
             detailsStatusChart = new Chart(document.getElementById('detailsStatusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Planifier', 'Réaliser', 'Rapporter'],
+                    labels: ['Planifier', 'Réaliser', 'Rapporter', 'Non Réaliser'],
                     datasets: [{
-                        data: [byStatus.planifier, byStatus.realiser, byStatus.raporter],
-                        backgroundColor: ['#6c757d', '#28a745', '#dc3545']
+                        data: [byStatus.planifier, byStatus.realiser, byStatus.raporter, byStatus.non_realiser],
+                        backgroundColor: ['#ffc107', '#28a745', '#fd7e14', '#dc3545']
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
@@ -729,7 +759,7 @@
             if (item.statut === 'planifier') {
                 return true;
             } else {
-                const dateStr = item.statut === 'realiser' ? item.dateRealisation : item.dateRapporter;
+                const dateStr = item.statut === 'realiser' ? item.dateRealisation : item.statut === 'raporter' ? item.dateRapporter : item.dateNonRealisation;
                 if (!dateStr) return false;
                 const itemDate = new Date(dateStr);
                 return itemDate.getFullYear() === fullDate.getFullYear() &&
@@ -767,14 +797,17 @@
                         ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
                         : item.statut === 'raporter' && item.dateRapporter 
                         ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
+                        : item.statut === 'non_realiser' && item.dateNonRealisation 
+                        ? `Non Réalisé: ${new Date(item.dateNonRealisation).toLocaleDateString('fr-FR')}`
                         : '';
                     const technicienStr = item.statut === 'realiser' && item.technicien 
                         ? `Technicien: ${item.technicien}`
                         : '';
+                    const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://www.wkwtunisie.com" target="_blank">${item.ligne}</a>` : item.ligne;
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
                             <div class="planning-left">
-                                <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
+                                <div class="planning-line">${getEmoji(item.statut)} ${ligneDisplay}</div>
                                 <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
                                 ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
                                 ${technicienStr ? `<div class="planning-date">${technicienStr}</div>` : ''}
@@ -934,14 +967,17 @@
                         ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
                         : item.statut === 'raporter' && item.dateRapporter 
                         ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
+                        : item.statut === 'non_realiser' && item.dateNonRealisation 
+                        ? `Non Réalisé: ${new Date(item.dateNonRealisation).toLocaleDateString('fr-FR')}`
                         : '';
                     const technicienStr = item.statut === 'realiser' && item.technicien 
                         ? `Technicien: ${item.technicien}`
                         : '';
+                    const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://www.wkwtunisie.com" target="_blank">${item.ligne}</a>` : item.ligne;
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
                             <div class="planning-left">
-                                <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
+                                <div class="planning-line">${getEmoji(item.statut)} ${ligneDisplay}</div>
                                 <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
                                 ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
                                 ${technicienStr ? `<div class="planning-date">${technicienStr}</div>` : ''}
@@ -979,15 +1015,19 @@
                     <table class="summary-table">
                         <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th><th>Date</th><th>Technicien</th></tr></thead>
                         <tbody>
-                            ${weekPlannings.map(item => `
+                            ${weekPlannings.map(item => {
+                                const dateStr = item.dateRealisation || item.dateRapporter || item.dateNonRealisation || '-';
+                                const dateFormatted = dateStr !== '-' ? new Date(dateStr).toLocaleDateString('fr-FR') : '-';
+                                const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://www.wkwtunisie.com" target="_blank">${item.ligne}</a>` : item.ligne;
+                                return `
                                 <tr class="${item.statut}">
                                     <td>S${item.semaine.toString().padStart(2, '0')}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
-                                    <td>${item.effectif}</td><td>${item.ligne}</td>
+                                    <td>${item.effectif}</td><td>${ligneDisplay}</td>
                                     <td>${getEmoji(item.statut)}</td>
-                                    <td>${item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-'}</td>
+                                    <td>${dateFormatted}</td>
                                     <td>${item.technicien ? item.technicien : '-'}</td>
                                 </tr>
-                            `).join('')}
+                            `}).join('')}
                             ${weekPlannings.length === 0 ? '<tr><td colspan="8" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
                         </tbody>
                     </table>
@@ -997,7 +1037,7 @@
 
         function getMonthPlannings(month, week) { return planningData[`${month}_${week}`] || []; }
         function getMonthSummary(month) { return Object.values(planningData).flat().filter(item => item.month === month); }
-        function getEmoji(statut) { return {planifier: '📋', realiser: '✅', raporter: '🔴'}[statut] || ''; }
+        function getEmoji(statut) { return {planifier: '📋', realiser: '✅', raporter: '🔴', non_realiser: '❌'}[statut] || ''; }
         function getMonthName(index) { return monthNames[index] || 'Inconnu'; }
         function getWeekNumber(date) {
             const startDate = new Date(date.getFullYear(), 0, 1);
@@ -1024,13 +1064,15 @@
         // EXPORT
         document.getElementById('exportBtn').addEventListener('click', () => {
             const allPlannings = Object.values(planningData).flat();
-            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date Réalisation/Rapporter', 'Technicien', 'Date Création']];
+            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date', 'Technicien', 'Date Création']];
             
             allPlannings.forEach(item => {
+                const dateStr = item.dateRealisation || item.dateRapporter || item.dateNonRealisation || '-';
+                const dateFormatted = dateStr !== '-' ? new Date(dateStr).toLocaleDateString('fr-FR') : '-';
                 excelData.push([
                     `S${item.semaine.toString().padStart(2, '0')}`, monthNames[item.month], item.heures, item.effectif,
                     item.ligne, item.statut,
-                    item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-',
+                    dateFormatted,
                     item.technicien ? item.technicien : '-',
                     new Date(item.createdAt).toLocaleDateString('fr-FR')
                 ]);
@@ -1045,3 +1087,4 @@
     </script>
 </body>
 </html>
+```
