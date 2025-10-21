@@ -43,7 +43,7 @@
         .add-form.visible { max-height: 150px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-top: 8px; }
         .form-grid input, .form-grid select { padding: 6px; border: 2px solid #e1e5e9; border-radius: 5px; font-size: 0.75em; }
-        #dateInput { display: none; }
+        #dateInput, #technicienInput { display: none; }
         .add-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 6px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75em; }
         .add-btn:hover { transform: translateY(-2px); }
         .legend-analytics { background: white; padding: 8px; border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 8px auto; max-width: 1400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.75em; height: 250px; }
@@ -231,6 +231,7 @@
                     <option value="raporter">🔴 Rapporter</option>
                 </select>
                 <input type="date" id="dateInput" placeholder="Date de Réalisation/Rapporter">
+                <input type="text" id="technicienInput" placeholder="Nom Technicien">
                 <button id="addBtn" class="add-btn"><i class="fas fa-save"></i> Ajouter</button>
             </div>
         </div>
@@ -380,18 +381,28 @@
                 : '<i class="fas fa-plus"></i> Afficher Ajouter Planning';
         });
 
-        // DYNAMIC DATE INPUT
+        // DYNAMIC DATE INPUT AND TECHNICIEN INPUT
         const statutSelect = document.getElementById('statut');
         const dateInput = document.getElementById('dateInput');
+        const technicienInput = document.getElementById('technicienInput');
         statutSelect.addEventListener('change', () => {
-            if (statutSelect.value === 'realiser' || statutSelect.value === 'raporter') {
+            const value = statutSelect.value;
+            if (value === 'realiser' || value === 'raporter') {
                 dateInput.style.display = 'block';
                 dateInput.required = true;
-                dateInput.placeholder = statutSelect.value === 'realiser' ? 'Date de Réalisation' : 'Date Rapporter';
+                dateInput.placeholder = value === 'realiser' ? 'Date de Réalisation' : 'Date Rapporter';
             } else {
                 dateInput.style.display = 'none';
                 dateInput.required = false;
                 dateInput.value = '';
+            }
+            if (value === 'realiser') {
+                technicienInput.style.display = 'block';
+                technicienInput.required = true;
+            } else {
+                technicienInput.style.display = 'none';
+                technicienInput.required = false;
+                technicienInput.value = '';
             }
         });
 
@@ -438,12 +449,13 @@
 
         // AJOUTER/MODIFIER
         document.getElementById('addBtn').addEventListener('click', async () => {
-            const semaine = parseInt(document.getElementById('semaine').value) || 0;
+            let semaine = parseInt(document.getElementById('semaine').value) || 0;
             const heures = parseInt(document.getElementById('heures').value) || 0;
             const effectif = parseInt(document.getElementById('effectif').value) || 0;
             const ligne = document.getElementById('ligne').value;
             const statut = document.getElementById('statut').value;
             const date = document.getElementById('dateInput').value;
+            const technicien = document.getElementById('technicienInput').value;
 
             if (!semaine || !heures || !effectif || !ligne || !statut) {
                 alert('⚠️ TOUS les champs requis !');
@@ -453,14 +465,28 @@
                 alert('⚠️ Date de Réalisation/Rapporter requise !');
                 return;
             }
+            if (statut === 'realiser' && !technicien) {
+                alert('⚠️ Nom du Technicien requis pour Réaliser !');
+                return;
+            }
+
+            let month = getMonthFromWeek(semaine);
+            if (statut === 'realiser' || statut === 'raporter') {
+                const actualDate = new Date(date);
+                semaine = getWeekNumber(actualDate);
+                month = actualDate.getMonth();
+            }
 
             const data = {
                 semaine, heures, effectif, ligne, statut,
                 userId: currentUser.uid,
                 createdAt: new Date().toISOString(),
-                month: getMonthFromWeek(semaine)
+                month
             };
-            if (statut === 'realiser') data.dateRealisation = date;
+            if (statut === 'realiser') {
+                data.dateRealisation = date;
+                data.technicien = technicien;
+            }
             if (statut === 'raporter') data.dateRapporter = date;
 
             try {
@@ -480,6 +506,8 @@
                 document.getElementById('statut').value = '';
                 document.getElementById('dateInput').value = '';
                 document.getElementById('dateInput').style.display = 'none';
+                document.getElementById('technicienInput').value = '';
+                document.getElementById('technicienInput').style.display = 'none';
                 if (document.getElementById('weekView').classList.contains('active') && currentWeek === semaine) {
                     showWeek(semaine);
                 }
@@ -525,15 +553,24 @@
                     document.getElementById('dateInput').required = true;
                     document.getElementById('dateInput').value = item.dateRealisation;
                     document.getElementById('dateInput').placeholder = 'Date de Réalisation';
+                    document.getElementById('technicienInput').style.display = 'block';
+                    document.getElementById('technicienInput').required = true;
+                    document.getElementById('technicienInput').value = item.technicien || '';
                 } else if (item.statut === 'raporter' && item.dateRapporter) {
                     document.getElementById('dateInput').style.display = 'block';
                     document.getElementById('dateInput').required = true;
                     document.getElementById('dateInput').value = item.dateRapporter;
                     document.getElementById('dateInput').placeholder = 'Date Rapporter';
+                    document.getElementById('technicienInput').style.display = 'none';
+                    document.getElementById('technicienInput').required = false;
+                    document.getElementById('technicienInput').value = '';
                 } else {
                     document.getElementById('dateInput').style.display = 'none';
                     document.getElementById('dateInput').required = false;
                     document.getElementById('dateInput').value = '';
+                    document.getElementById('technicienInput').style.display = 'none';
+                    document.getElementById('technicienInput').required = false;
+                    document.getElementById('technicienInput').value = '';
                 }
                 editId = id;
                 document.getElementById('addBtn').innerHTML = '<i class="fas fa-edit"></i> Modifier';
@@ -688,6 +725,19 @@
             updateAnalytics('month');
         }
 
+        function shouldShowOnDay(item, fullDate) {
+            if (item.statut === 'planifier') {
+                return true;
+            } else {
+                const dateStr = item.statut === 'realiser' ? item.dateRealisation : item.dateRapporter;
+                if (!dateStr) return false;
+                const itemDate = new Date(dateStr);
+                return itemDate.getFullYear() === fullDate.getFullYear() &&
+                       itemDate.getMonth() === fullDate.getMonth() &&
+                       itemDate.getDate() === fullDate.getDate();
+            }
+        }
+
         // ✅ FIX CLIC MOIS - createMonthCalendar() with large option
         function createMonthCalendar(year, month, monthName, monthIndex, isLarge = false) {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -706,16 +756,20 @@
             }
             
             for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, month, day);
-                const weekNum = getWeekNumber(date);
-                const monthPlannings = getMonthPlannings(month, weekNum);
+                const fullDate = new Date(year, month, day);
+                const weekNum = getWeekNumber(fullDate);
+                const weekPlannings = getMonthPlannings(month, weekNum);
+                const dayPlannings = weekPlannings.filter(item => shouldShowOnDay(item, fullDate));
                 
                 let planningHtml = '';
-                monthPlannings.forEach(item => {
+                dayPlannings.forEach(item => {
                     const dateStr = item.statut === 'realiser' && item.dateRealisation 
                         ? `Réalisé: ${new Date(item.dateRealisation).toLocaleDateString('fr-FR')}`
                         : item.statut === 'raporter' && item.dateRapporter 
                         ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
+                        : '';
+                    const technicienStr = item.statut === 'realiser' && item.technicien 
+                        ? `Technicien: ${item.technicien}`
                         : '';
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
@@ -723,6 +777,7 @@
                                 <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
                                 <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
                                 ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
+                                ${technicienStr ? `<div class="planning-date">${technicienStr}</div>` : ''}
                             </div>
                             <div class="planning-actions">
                                 <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
@@ -870,8 +925,9 @@
                 html += `<div class="week-day-header">${day}</div>`;
             });
 
+            const weekPlannings = getWeekPlannings(weekNum);
             weekDays.forEach(date => {
-                const dayPlannings = getWeekPlannings(weekNum);
+                const dayPlannings = weekPlannings.filter(item => shouldShowOnDay(item, date));
                 let planningHtml = '';
                 dayPlannings.forEach(item => {
                     const dateStr = item.statut === 'realiser' && item.dateRealisation 
@@ -879,12 +935,16 @@
                         : item.statut === 'raporter' && item.dateRapporter 
                         ? `Reporté: ${new Date(item.dateRapporter).toLocaleDateString('fr-FR')}`
                         : '';
+                    const technicienStr = item.statut === 'realiser' && item.technicien 
+                        ? `Technicien: ${item.technicien}`
+                        : '';
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
                             <div class="planning-left">
                                 <div class="planning-line">${getEmoji(item.statut)} ${item.ligne}</div>
                                 <div class="planning-details">${item.heures}H | ${item.effectif}EF</div>
                                 ${dateStr ? `<div class="planning-date">${dateStr}</div>` : ''}
+                                ${technicienStr ? `<div class="planning-date">${technicienStr}</div>` : ''}
                             </div>
                             <div class="planning-actions">
                                 <button class="action-btn" onclick="window.editPlanning('${item.id}')"><i class="fas fa-edit"></i></button>
@@ -917,7 +977,7 @@
                 <div class="month-summary">
                     <h4>Résumé Semaine ${weekNum.toString().padStart(2, '0')}</h4>
                     <table class="summary-table">
-                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th><th>Date</th></tr></thead>
+                        <thead><tr><th>Sem</th><th>Mois</th><th>Heures</th><th>Effectif</th><th>Ligne</th><th>Statut</th><th>Date</th><th>Technicien</th></tr></thead>
                         <tbody>
                             ${weekPlannings.map(item => `
                                 <tr class="${item.statut}">
@@ -925,9 +985,10 @@
                                     <td>${item.effectif}</td><td>${item.ligne}</td>
                                     <td>${getEmoji(item.statut)}</td>
                                     <td>${item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-'}</td>
+                                    <td>${item.technicien ? item.technicien : '-'}</td>
                                 </tr>
                             `).join('')}
-                            ${weekPlannings.length === 0 ? '<tr><td colspan="7" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
+                            ${weekPlannings.length === 0 ? '<tr><td colspan="8" style="color:#6c757d;">Aucun planning</td></tr>' : ''}
                         </tbody>
                     </table>
                 </div>
@@ -963,13 +1024,14 @@
         // EXPORT
         document.getElementById('exportBtn').addEventListener('click', () => {
             const allPlannings = Object.values(planningData).flat();
-            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date Réalisation/Rapporter', 'Date Création']];
+            const excelData = [['Semaine', 'Mois', 'Heures', 'Effectif', 'Ligne', 'Statut', 'Date Réalisation/Rapporter', 'Technicien', 'Date Création']];
             
             allPlannings.forEach(item => {
                 excelData.push([
                     `S${item.semaine.toString().padStart(2, '0')}`, monthNames[item.month], item.heures, item.effectif,
                     item.ligne, item.statut,
                     item.dateRealisation ? new Date(item.dateRealisation).toLocaleDateString('fr-FR') : item.dateRapporter ? new Date(item.dateRapporter).toLocaleDateString('fr-FR') : '-',
+                    item.technicien ? item.technicien : '-',
                     new Date(item.createdAt).toLocaleDateString('fr-FR')
                 ]);
             });
