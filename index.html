@@ -375,7 +375,7 @@
 
         // Preventive button
         document.getElementById('preventiveBtn').addEventListener('click', () => {
-            window.open('https://wkwgroup-my.sharepoint.com/:f:/r/personal/houssine_trabelsi_wkw-group_com/Documents/pr%C3%A9ventive%20niveau%202?csf=1&web=1&e=Mvv1UP', '_blank');
+            window.open('https://wkwgroup-my.sharepoint.com/my?id=%2Fpersonal%2Fhoussine%5Ftrabelsi%5Fwkw%2Dgroup%5Fcom%2FDocuments%2Fpr%C3%A9ventive%20niveau%202&ga=1');
         });
 
         // Fullscreen change for TV mode
@@ -802,7 +802,7 @@
                     const technicienStr = item.statut === 'realiser' && item.technicien 
                         ? `Technicien: ${item.technicien}`
                         : '';
-                    const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://wkwgroup-my.sharepoint.com/:f:/r/personal/houssine_trabelsi_wkw-group_com/Documents/pr%C3%A9ventive%20niveau%202?csf=1&web=1&e=Mvv1UP" target="_blank">${item.ligne}</a>` : item.ligne;
+                    const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://wkwgroup-my.sharepoint.com/my?id=%2Fpersonal%2Fhoussine%5Ftrabelsi%5Fwkw%2Dgroup%5Fcom%2FDocuments%2Fpr%C3%A9ventive%20niveau%202&ga=1">${item.ligne}</a>` : item.ligne;
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
                             <div class="planning-left">
@@ -972,7 +972,7 @@
                     const technicienStr = item.statut === 'realiser' && item.technicien 
                         ? `Technicien: ${item.technicien}`
                         : '';
-                    const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://wkwgroup-my.sharepoint.com/:f:/r/personal/houssine_trabelsi_wkw-group_com/Documents/pr%C3%A9ventive%20niveau%202?csf=1&web=1&e=Mvv1UP" target="_blank">${item.ligne}</a>` : item.ligne;
+                    const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://wkwgroup-my.sharepoint.com/my?id=%2Fpersonal%2Fhoussine%5Ftrabelsi%5Fwkw%2Dgroup%5Fcom%2FDocuments%2Fpr%C3%A9ventive%20niveau%202&ga=1">${item.ligne}</a>` : item.ligne;
                     planningHtml += `
                         <div class="planning-item ${item.statut}">
                             <div class="planning-left">
@@ -1017,7 +1017,7 @@
                             ${weekPlannings.map(item => {
                                 const dateStr = item.dateRealisation || item.dateRapporter || item.dateNonRealisation || '-';
                                 const dateFormatted = dateStr !== '-' ? new Date(dateStr).toLocaleDateString('fr-FR') : '-';
-                                const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://wkwgroup-my.sharepoint.com/:f:/r/personal/houssine_trabelsi_wkw-group_com/Documents/pr%C3%A9ventive%20niveau%202?csf=1&web=1&e=Mvv1UP" target="_blank">${item.ligne}</a>` : item.ligne;
+                                const ligneDisplay = item.ligne === 'Imprimer Preventive Niveau 2' ? `<a href="https://wkwgroup-my.sharepoint.com/my?id=%2Fpersonal%2Fhoussine%5Ftrabelsi%5Fwkw%2Dgroup%5Fcom%2FDocuments%2Fpr%C3%A9ventive%20niveau%202&ga=1">${item.ligne}</a>` : item.ligne;
                                 return `
                                 <tr class="${item.statut}">
                                     <td>S${item.semaine.toString().padStart(2, '0')}</td><td>${monthNames[item.month]}</td><td>${item.heures}</td>
